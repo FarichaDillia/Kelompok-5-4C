@@ -1,0 +1,216 @@
+/* ====== General Setup ====== */
+h1, h2, h3, h4, h5, h6, p, a, button {
+    font-family: 'Montserrat', sans-serif;
+}
+
+/* ====== Navbar ====== */
+.navbar {
+    background-color: #0e1036;
+}
+.logo-img {
+    max-height: 60px;
+    border-radius: 10px;
+}
+.navbar-nav .nav-link {
+    color: #ffffff;
+    font-weight: 600;
+    margin: 0 15px;
+}
+.navbar-nav .nav-link:hover {
+    color: #02ddff;
+}
+.account a {
+    color: #ffffff;
+    font-weight: 600;
+    margin-left: 20px;
+}
+.account a:hover {
+    color: #02ddff;
+}
+
+/* ====== Carousel ====== */
+.carousel {
+    position: relative;
+    width: 100%;
+    height: 90vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.carousel img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.carousel .overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    z-index: 1;
+}
+.carousel-text {
+    position: absolute;
+    z-index: 2;
+    text-align: center;
+    color: #ffffff;
+    padding: 20px;
+}
+.carousel-text h1 {
+    font-size: 50px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+.carousel-text p {
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1.6;
+}
+
+/* ====== Statistics ====== */
+.stats {
+    background-color: #3f5c8b;
+}
+.stats h2 {
+    font-size: 48px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+.stats p {
+    font-size: 18px;
+    margin: 0;
+}
+
+/* ====== Categories ====== */
+.categories {
+    background-color: #77acc7;
+    color: #0e1036;
+}
+.categories i {
+    color: #0e1036;
+}
+.categories p {
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+/* ====== Search Section ====== */
+.search-section {
+    background-color: #77acc7;
+    color: #0e1036;
+}
+.search-input {
+    width: 100%;
+    border-radius: 30px;
+    padding: 10px 20px;
+    margin-right: 10px;
+    border: none;
+}
+.btn-search {
+    background-color: #2f4169;
+    color: white;
+    padding: 10px 30px;
+    border-radius: 10px;
+    border: none;
+}
+.btn-search:hover {
+    background-color: #233253;
+}
+
+/* ====== Item Selection ====== */
+.item-selection {
+    background-color: #77acc7;
+    padding: 100px 0;
+}
+.item-selection h2 {
+    font-size: 36px;
+    font-weight: 700;
+    text-align: left;
+    margin-bottom: 40px;
+}
+.item-selection h2 i {
+    margin-right: 10px;
+    color: #2f4169;
+}
+
+/* ====== Card ====== */
+.card {
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    background-color: #ffffff;
+}
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+.card-body {
+    padding: 20px;
+    text-align: left;
+}
+.card-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+.card-text {
+    font-size: 18px;
+    color: #2f4169;
+    margin-bottom: 20px;
+}
+.favorite-icon {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    color: #77acc7;
+    font-size: 24px;
+    transition: color 0.3s ease;
+}
+.favorite-icon:hover {
+    color: #ff4b5c;
+}
+.btn-view {
+    background-color: #2f4169;
+    color: #ffffff;
+    padding: 8px 24px;
+    border-radius: 30px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+    border: none;
+}
+.btn-view:hover {
+    background-color: #233253;
+}
+.btn-view-all {
+    background-color: transparent;
+    color: #0e1036;
+    font-weight: 700;
+    border: 2px solid #0e1036;
+    border-radius: 12px;
+    padding: 8px 30px;
+    font-size: 16px;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+    display: inline-block;
+}
+.btn-view-all:hover {
+    background-color: #0e1036;
+    color: #ffffff;
+    transform: scale(1.05);
+}
+
+/* ====== Footer ====== */
+.footer {
+    background-color: #0e1036;
+    color: #ffffff;
+    font-size: 14px;
+    margin-top: auto;
+}
+.footer p {
+    margin: 0;
+}
+
+  
