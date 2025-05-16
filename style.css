@@ -2,6 +2,9 @@
 h1, h2, h3, h4, h5, h6, p, a, button {
     font-family: 'Montserrat', sans-serif;
 }
+ body {
+        background-color: #77acc7; 
+    }
 
 /* ====== Navbar ====== */
 .navbar {
@@ -95,44 +98,8 @@ h1, h2, h3, h4, h5, h6, p, a, button {
     margin-top: 10px;
 }
 
-/* ====== Search Section ====== */
-.search-section {
-    background-color: #77acc7;
-    color: #0e1036;
-}
-.search-input {
-    width: 100%;
-    border-radius: 30px;
-    padding: 10px 20px;
-    margin-right: 10px;
-    border: none;
-}
-.btn-search {
-    background-color: #2f4169;
-    color: white;
-    padding: 10px 30px;
-    border-radius: 10px;
-    border: none;
-}
-.btn-search:hover {
-    background-color: #233253;
-}
 
-/* ====== Item Selection ====== */
-.item-selection {
-    background-color: #77acc7;
-    padding: 100px 0;
-}
-.item-selection h2 {
-    font-size: 36px;
-    font-weight: 700;
-    text-align: left;
-    margin-bottom: 40px;
-}
-.item-selection h2 i {
-    margin-right: 10px;
-    color: #2f4169;
-}
+
 
 /* ====== Card ====== */
 .card {
@@ -202,6 +169,43 @@ h1, h2, h3, h4, h5, h6, p, a, button {
     transform: scale(1.05);
 }
 
+
+/* Search Section Stylish Fix */
+.search-section {
+    background-color: #77acc7;
+    color: #0e1036;
+}
+
+.search-form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+
+/* Tombol Search gaya modern */
+.search-btn {
+    padding: 14px 30px;
+    border: none;
+    border-radius: 12px;
+    background-color: #2b3a67 !important;
+    color: blue !important;
+    font-size: 16px;
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.search-btn:hover {
+    background-color: #1f2a4d !important;
+    transform: translateY(-2px);
+}
+
+
+
 /* ====== Footer ====== */
 .footer {
     background-color: #0e1036;
@@ -212,5 +216,3 @@ h1, h2, h3, h4, h5, h6, p, a, button {
 .footer p {
     margin: 0;
 }
-
-  

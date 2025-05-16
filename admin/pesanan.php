@@ -45,7 +45,7 @@ if (isset($_GET['verifikasi'])) {
         <hr class="sidebar-divider my-0">
         <li class="nav-item"><a class="nav-link" href="dashboard.php"><i class="fas fa-fw fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
         <li class="nav-item"><a class="nav-link" href="barang.php"><i class="fas fa-box"></i> <span>Kelola Barang</span></a></li>
-        <li class="nav-item active"><a class="nav-link" href="#"><i class="fas fa-check-circle"></i> <span>Verifikasi Pesanan</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="pesanan.php"><i class="fas fa-check-circle"></i> <span>Verifikasi Pesanan</span></a></li>
         <hr class="sidebar-divider">
         <li class="nav-item"><a class="nav-link" href="logout.php"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a></li>
     </ul>
