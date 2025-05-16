@@ -1,4 +1,11 @@
 <?php
+session_start();
+if (isset($_GET['logout'])) {
+    session_unset();
+    session_destroy();
+    header("Location: login.php");
+    exit();
+}
 include "config.php";
 $items = mysqli_query($conn, "SELECT * FROM items LIMIT 8");
 
@@ -57,16 +64,12 @@ $years_growth = 5;
                 <li class="nav-item"><a class="nav-link" href="item.php">Item</a></li>
             </ul>
         </div>
-        <!-- Profil -->
-        <div class="profile">
-    <a href="profile.php" class="btn search-button btn-md d-none d-md-block ml-4 text-white fw-normal">
-        <i class="fa fa-user-circle"></i> Profile
-    </a>
-</div>
-
-
-
+       <!-- Account -->
+        <div class="account">
+            <a href="nav.php" class="btn search-button btn-md d-none d-md-block ml-4"><i class="fa fa-user-circle"></i> Account</a>
+        </div>
         <!-- Account End -->
+
     </nav>
     <!-- Navbar End -->
 
