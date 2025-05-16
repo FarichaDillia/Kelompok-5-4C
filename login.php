@@ -9,14 +9,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $result = mysqli_query($conn, "SELECT * FROM users WHERE username='$username'");
     $user = mysqli_fetch_assoc($result);
 
-    if ($user && $password == $user["password"]) {  // langsung cocokkan string
+    if ($user && $password == $user["password"]) {  
         $_SESSION["user_id"] = $user["id"];
         $_SESSION["role"] = $user["role"];
         if ($user["role"] == "admin") {
-            header("Location: admin/dashboard.php");
-        } else {
-            header("Location: index.php");
-        }
+        header("Location: admin/dashboard.php");
+    } elseif ($user["role"] == "owner") {
+        header("Location: owner/dashboard.php");
+    } else {
+        header("Location: index.php");
+    }
     } else {
         echo "<script>alert('Login gagal!'); window.location='login.php';</script>";
     }
@@ -25,6 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Login - Rentify</title>
