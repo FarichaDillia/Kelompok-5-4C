@@ -1,0 +1,254 @@
+/* HOME PAGE Specific Styles */
+body {
+    background-color: #f0f8ff;
+    min-height: 100vh;
+}
+
+/* Navbar Styling */
+.navbar {
+    background-color: #1f2b43;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    color: #fff !important;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.navbar-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+}
+
+.navbar-nav .nav-link {
+    color: #fff !important;
+    font-size: 1.1rem;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-nav .nav-link:hover {
+    background-color: #0d1a2b;
+    border-radius: 5px;
+}
+
+.navbar-nav .nav-item:last-child .nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-left: auto; 
+}
+
+/* Home Page Content */
+.card-header {
+    background-color: #1f2b43;
+    color: white;
+    font-size: 1.25rem;
+}
+
+.card-body {
+    background-color: #e6f2ff;
+}
+
+.card-footer {
+    background-color: #fff;
+}
+
+/* Footer Styling */
+footer {
+    background-color: #fff;
+    padding: 10px;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+}
+
+
+
+
+/* ITEM PAGE Specific Styles */
+body {
+    background-color: #f0f8ff;
+    min-height: 100vh;
+}
+
+.container-fluid {
+    margin-top: 20px;
+}
+
+/* Table Styling for Item List */
+.table th, .table td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 10px;
+}
+
+.table th {
+    background-color: #1f2b43;
+    color: white;
+}
+
+.table td {
+    background-color: #f8f9fc;
+}
+
+/* Button Styling for Item List */
+.table .btn {
+    width: 80px;
+    padding: 5px;
+}
+
+.table .btn-success {
+    background-color: #28a745;
+    color: white;
+    border: 1px solid #28a745;
+}
+
+.table .btn-danger {
+    background-color: #dc3545;
+    color: white;
+    border: 1px solid #dc3545;
+}
+
+.table .btn-success:hover {
+    background-color: #218838;
+}
+
+.table .btn-danger:hover {
+    background-color: #c82333;
+}
+
+/* Badge Status Styling */
+.table .badge-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.table .badge-warning {
+    background-color: #ffc107;
+    color: white;
+}
+
+.table .badge-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Card Styles for Item */
+.card-header {
+    background-color: #1f2b43;
+    color: white;
+    font-size: 1.25rem;
+}
+
+.card-body {
+    background-color: #e6f2ff;
+}
+
+.card-footer {
+    background-color: #fff;
+}
+
+
+
+/* RENT PAGE Specific Styles */
+body {
+    background-color: #f0f8ff;
+    min-height: 100vh;
+}
+
+.container-fluid {
+    margin-top: 20px;
+}
+
+/* Table Styling for Rent List */
+.table th, .table td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 10px;
+}
+
+.table th {
+    background-color: #1f2b43;
+    color: white;
+}
+
+.table td {
+    background-color: #f8f9fc;
+}
+
+/* Button Styling for Rent Actions */
+.table .btn {
+    width: 80px;
+    padding: 5px;
+}
+
+.table .btn-confirm {
+    background-color: #28a745;
+    color: white;
+    border: 1px solid #28a745;
+}
+
+.table .btn-cancel {
+    background-color: #dc3545;
+    color: white;
+    border: 1px solid #dc3545;
+}
+
+.table .btn-confirm:hover {
+    background-color: #218838;
+}
+
+.table .btn-cancel:hover {
+    background-color: #c82333;
+}
+
+/* Styling untuk status */
+.badge-verified {
+    background-color: #28a745;
+    color: white;
+}
+
+.badge-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.badge-warning {
+    background-color: #ffc107;
+    color: black;
+}
+
+.badge-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.badge-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.card-body {
+    background-color: #e6f2ff;
+}
+
+.card-footer {
+    background-color: #fff;
+}
+
+/* Search Bar Styles */
+.search-bar {
+    margin: 20px 0;
+    max-width: 300px;
+}
