@@ -45,7 +45,7 @@ $years_growth = 5;
         <nav class="navbar navbar-expand-lg">
     <div class="container">
          <!-- Logo -->
-         <a href="#"><img src="img/logo.jpg" alt="Logo" class="logo-img"></a>
+         <a href="#"><img src="assets/logo.jpg" alt="Logo" class="logo-img"></a>
         </div>
          <!-- Logo End -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
