@@ -121,10 +121,15 @@ $items = mysqli_query($conn, $query);
                  <li class="nav-item"><a class="nav-link" href="riwayat.php">History</a></li>
             </ul>
         </div>
-        <!-- Account -->
-        <div class="account">
-            <a href="login.php" class="btn search-button btn-md d-none d-md-block ml-4"><i class="fa fa-user-circle"></i> Account</a>
-        </div>
+        <!-- Profil -->
+        <div class="profile">
+    <a href="profile.php" class="btn search-button btn-md d-none d-md-block ml-4 text-white fw-normal">
+        <i class="fa fa-user-circle"></i> Profile
+    </a>
+</div>
+
+
+
         <!-- Account End -->
     </nav>
     <!-- Navbar End -->
