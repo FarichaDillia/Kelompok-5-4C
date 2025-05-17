@@ -12,8 +12,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($user && $password == $user["password"]) {  // langsung cocokkan string
         $_SESSION["user_id"] = $user["id"];
         $_SESSION["role"] = $user["role"];
+        
+        // Periksa role pengguna dan redirect sesuai role
         if ($user["role"] == "admin") {
             header("Location: admin/dashboard.php");
+        } elseif ($user["role"] == "owner") {
+            header("Location: owner/dashboard.php");
         } else {
             header("Location: index.php");
         }
