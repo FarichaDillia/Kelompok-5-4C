@@ -1,8 +1,2 @@
-<?php
-session_start();
-session_unset();     // Hapus semua variabel session
-session_destroy();   // Hancurkan session
 
-// Arahkan ke halaman awal
-header("Location: index.php");
-exit();
+

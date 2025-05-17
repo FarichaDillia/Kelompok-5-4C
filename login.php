@@ -16,38 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = mysqli_query($conn, $query);
     $user = mysqli_fetch_assoc($result);
 
-    if ($user && $password === $user['password']) {
-        // Simpan sesi login
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['role'] = $user['role'];
-        $userRole = strtolower(trim($user['role']));
 
-        // Validasi role akses sesuai panel login
-        if ($intendedRole === 'admin' && $userRole !== 'admin') {
-            echo "<script>alert('Anda tidak memiliki akses ke panel ini.'); window.location='login.php?role_login=admin';</script>";
-            exit;
-        }
-        if ($intendedRole === 'owner' && !in_array($userRole, ['owner', 'admin'])) {
-            echo "<script>alert('Anda tidak memiliki akses ke panel ini.'); window.location='login.php?role_login=owner';</script>";
-            exit;
-        }
-        if ($intendedRole === 'user' && !in_array($userRole, ['user', 'admin'])) {
-            echo "<script>alert('Anda tidak memiliki akses ke panel ini.'); window.location='login.php?role_login=user';</script>";
-            exit;
-        }
-
-        // Redirect sesuai panel login
-        if ($intendedRole === 'admin') {
-            header("Location: admin/dashboard.php");
-        } elseif ($intendedRole === 'owner') {
-            header("Location: owner/dashboard.php");
-        } elseif ($intendedRole === 'user') {
-            header("Location: navbar.php");
-        } else {
-            // fallback umum
-            header("Location: navbar.php");
-        }
-        exit;
     } else {
         echo "<script>alert('Username atau password salah!');</script>";
     }
