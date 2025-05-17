@@ -22,6 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $result = mysqli_query($conn, "SELECT * FROM users WHERE username='$username'");
     $user = mysqli_fetch_assoc($result);
 
+
     } else {
         echo "<script>alert('Login gagal! Username atau password salah.'); window.location='login.php" . (!empty($intendedRole) ? "?role_login=" . $intendedRole : "") . "';</script>";
     }
