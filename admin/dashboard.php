@@ -39,7 +39,6 @@ if (!$result_pesanan) {
 </head>
 <body id="page-top">
 <div id="wrapper">
-
     <div id="content-wrapper" class="d-flex flex-column">
         <div id="content">
             

@@ -3,6 +3,18 @@ include "config.php";
 
 // Ambil semua item dari database
 $items = mysqli_query($conn, "SELECT * FROM items");
+
+// Tangkap input dari form
+$search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
+
+// Query pencarian
+if (!empty($search)) {
+    $query = "SELECT * FROM items WHERE nama LIKE '%$search%' OR deskripsi LIKE '%$search%'";
+} else {
+    $query = "SELECT * FROM items LIMIT 8";
+}
+
+$items = mysqli_query($conn, $query); 
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -23,6 +35,53 @@ $items = mysqli_query($conn, "SELECT * FROM items");
 
     <title>Item</title>
 </head>
+<style>
+  .search-form {
+  display: flex;
+  justify-content: center;
+  padding: 50px;
+}
+
+.search-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 1500px;  
+  gap: 25px;
+  padding: 0 2rem;
+}
+
+.search-input {
+  flex: 1;
+  padding: 14px 22px;
+  border: none;
+  border-radius: 30px;
+  font-size: 16px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  outline: none;
+}
+
+.search-btn {
+  padding: 14px 30px;
+  border: none;
+  border-radius: 12px;
+  background-color: #2b3a67;     
+  color: white !important;       
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;        
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.search-btn:hover {
+  background-color: #1f2a4d;
+  transform: translateY(-2px);
+}
+
+</style>
 <body>
     <!-- Navbar Start -->
     <nav class="navbar navbar-expand-lg">
@@ -37,6 +96,8 @@ $items = mysqli_query($conn, "SELECT * FROM items");
         <ul class="navbar-nav">
             <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
             <li class="nav-item"><a class="nav-link" href="#item">Item</a></li>
+            <li class="nav-item"><a class="nav-link" href="rent.php">Rent</a></li>
+            <li class="nav-item"><a class="nav-link" href="riwayat.php">History</a></li>
         </ul>
     </div>
     <div class="account">
@@ -45,10 +106,21 @@ $items = mysqli_query($conn, "SELECT * FROM items");
     </nav>
     <!-- Navbar End -->
 
+    <!-- Search Section -->
+<form action="item.php" method="GET" class="search-form">
+  <div class="search-wrapper">
+    <input type="text" name="search" class="search-input" placeholder="Search Item">
+    <button type="submit" class="search-btn">Search</button>
+  </div>
+</form>
+
     <!-- Item -->
     <section class="item-selection text-center py-5">
       <div class="container">
-        <h2 class="mb-5"><i class="fas fa-box-open"></i> Item Selection</h2>
+  
+        <h2 class="section-title mb-5 fw-bold">
+  <i class="fas fa-box-open"></i> Item Selection
+</h2>
         <div class="row">
           <?php while ($item = mysqli_fetch_assoc($items)): ?>
           <div class="col-md-3 mb-4">
@@ -59,7 +131,7 @@ $items = mysqli_query($conn, "SELECT * FROM items");
                 <p class="card-text">Rp. <?= number_format($item['harga']) ?> / Day</p>
                 <p class="card-description"><?= htmlspecialchars($item['deskripsi']) ?></p>
                 <p class="card-stock"><strong>Stok:</strong> <?= $item['stok'] ?> pcs</p>
-                <a href="checkout.php?id=<?= $item['id'] ?>" class="btn btn-view">Rent</a>
+                <a href="add_to_cart.php?id=<?= $item['id'] ?>&from=item" class="btn btn-view">Rent</a>
                 <i class="fas fa-heart favorite-icon"></i>
               </div>
             </div>
@@ -73,7 +145,7 @@ $items = mysqli_query($conn, "SELECT * FROM items");
     <!-- Footer -->
     <footer class="footer text-center py-4">
       <div class="container-fluid">
-        <p>&copy; 2024 Rentify - Team 5. All rights reserved.</p>
+        <p>&copy; 2025 Rentify - Team 5. All rights reserved.</p>
       </div>
     </footer>
 
