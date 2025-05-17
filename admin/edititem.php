@@ -2,78 +2,114 @@
 session_start();
 include "../config.php";
 
-// Cek apakah pengguna sudah login dan memiliki role admin
 if (!isset($_SESSION["role"]) || $_SESSION["role"] != "admin") {
     header("Location: ../login.php");
     exit;
 }
 
-// Ambil ID item yang ingin diedit
-if (isset($_GET['id'])) {
-    $id = $_GET['id'];
-
-    // Ambil data item berdasarkan ID
-    $query = "SELECT * FROM items WHERE id = $id";
-    $result = mysqli_query($conn, $query);
-    $item = mysqli_fetch_assoc($result);
-
-    // Jika item tidak ditemukan
-    if (!$item) {
-        echo "<script>alert('Item tidak ditemukan.'); window.location.href='item.php';</script>";
-        exit;
-    }
+// ambil id dari url
+$id = $_GET['id'] ?? null;
+if (!$id || !is_numeric($id)) {
+    header("Location: item.php");
+    exit;
 }
 
-// Proses jika form disubmit
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Ambil data dari form
+// ambil data item sesuai id
+$stmt = $conn->prepare("SELECT * FROM items WHERE id = ?");
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$result = $stmt->get_result();
+$item = $result->fetch_assoc();
+
+if (!$item) {
+    echo "<script>alert('Item tidak ditemukan'); window.location='item.php';</script>";
+    exit;
+}
+
+// ambil kategori untuk dropdown
+$queryCategories = "SELECT * FROM kategori";
+$resultCategories = mysqli_query($conn, $queryCategories);
+
+$errors = [];
+$success = false;
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nama = $_POST['nama'];
-    $kategori = $_POST['kategori'];
+    $id_kategori = $_POST['id_kategori'];
     $deskripsi = $_POST['deskripsi'];
     $harga = $_POST['harga'];
-    $kode_voucher = $_POST['kode_voucher']; // Ambil kode voucher dari form
+    $kode_voucher = $_POST['kode_voucher'];
     $stok = $_POST['stok'];
-    
-    // Cek apakah ada file gambar yang dikirim
-    if (isset($_FILES['gambar']) && $_FILES['gambar']['error'] === UPLOAD_ERR_OK) {
-        // Cek apakah ada gambar yang diupload
-        if ($_FILES['gambar']['name']) {
-            $gambar = $_FILES['gambar']['name'];
-            $gambar_tmp = $_FILES['gambar']['tmp_name'];
-            $folder = "../img/";
+    $status = $_POST['status'];
 
-            // Pindahkan file gambar ke folder tujuan
-            if (move_uploaded_file($gambar_tmp, $folder . $gambar)) {
-                // Berhasil upload gambar
+
+    // upload gambar baru jika ada
+    if (isset($_FILES['gambar']) && $_FILES['gambar']['error'] === 0) {
+        $allowed = ['jpg','jpeg','png','gif'];
+        $filename = $_FILES['gambar']['name'];
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        if (!in_array($ext, $allowed)) {
+            $errors[] = "Format gambar harus jpg, jpeg, png, atau gif";
+        } else {
+            $target_dir = "../img/";
+            $newFilename = uniqid() . '.' . $ext;
+            $target_file = $target_dir . $newFilename;
+            if (!move_uploaded_file($_FILES['gambar']['tmp_name'], $target_file)) {
+                $errors[] = "Gagal upload gambar";
             } else {
-                echo "<script>alert('Gagal mengupload gambar.');</script>";
-                exit;
+                // hapus gambar lama kalau ada
+                if ($item['gambar'] && file_exists($target_dir . $item['gambar'])) {
+                    unlink($target_dir . $item['gambar']);
+                }
+                $item['gambar'] = $newFilename;
             }
         }
-    } else {
-        // Jika tidak ada gambar baru, gunakan gambar lama atau default
-        $gambar = isset($item['gambar']) ? $item['gambar'] : ''; 
     }
 
 
-    // Update data item di database
-    $query = "UPDATE items SET 
-                nama = '$nama',
-                kategori = '$kategori',
-                deskripsi = '$deskripsi',
-                harga = '$harga',
-                kode_voucher = '$kode_voucher',
-                stok = '$stok',
-                gambar = '$gambar'
+
+    if (empty($errors)) {
+        $stmtUpdate = $conn->prepare("UPDATE items SET nama=?, id_kategori=?, deskripsi=?, harga=?, kode_voucher=?, stok=?, gambar=?, status=? WHERE id=?");
+        $stmtUpdate->bind_param("sisdssssi", $nama, $id_kategori, $deskripsi, $harga, $kode_voucher, $stok, $item['gambar'], $status, $id);
+        if ($stmtUpdate->execute()) {
+            $success = true;
+        } else {
+            $errors[] = "Gagal update data: " . $conn->error;
+        }
+    }
+
+
+    // Proses jika form disubmit
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Ambil data dari form
+    $jumlah = $_POST['jumlah'];
+    $periode = $_POST['periode'];
+
+    // Update data pesanan di database
+    $query = "UPDATE pesanan SET 
+                jumlah = '$jumlah',
+                periode = '$periode'
               WHERE id = $id";
 
-    if (mysqli_query($conn, $query)) {
+     if (mysqli_query($conn, $query)) {
+        // Jika update berhasil, arahkan ke halaman home (dashboard.php)
         echo "<script>alert('Item berhasil diupdate!'); window.location.href='item.php';</script>";
     } else {
         echo "<script>alert('Gagal mengupdate item.');</script>";
     }
 }
+}
 ?>
+
+<?php if ($errors): ?>
+    <div class="alert alert-danger">
+        <ul>
+            <?php foreach ($errors as $err): ?>
+                <li><?= htmlspecialchars($err) ?></li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+<?php endif; ?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -88,119 +124,123 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body id="page-top">
 <div id="wrapper">
-
     <div id="content-wrapper" class="d-flex flex-column">
         <div id="content">
-            
-            <!-- Navbar -->
-            <nav class="navbar navbar-expand-lg navbar-dark">
+            <nav class="navbar navbar-expand-lg">
                 <div class="container">
-                    <!-- Logo Rentify di kiri -->
-                    <a class="navbar-brand" href="index.php">
-                        <img src="img/logo.jpg" alt="Logo" class="logo"> Rentify
-                    </a>
-
-                    <!-- Navbar Toggle untuk mobile -->
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-
-                    <!-- Navbar Menu -->
-                    <div class="collapse navbar-collapse" id="navbarNav">
-                        <ul class="navbar-nav ml-auto">
-                            <li class="nav-item">
-                                <a class="nav-link <?php if($page == 'home') echo 'active'; ?>" href="dashboard.php">Home</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link <?php if($page == 'item') echo 'active'; ?>" href="item.php">Item</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link <?php if($page == 'rent') echo 'active'; ?>" href="rent.php">Rent</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link <?php if($page == 'return') echo 'active'; ?>" href="return.php">Return</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link <?php if($page == 'review') echo 'active'; ?>" href="review.php">Review</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link <?php if($page == 'transaction') echo 'active'; ?>" href="transaction.php">Transaction</a>
-                            </li>
-                            <!-- Profile dengan ikon dan teks Owner -->
-                            <li class="nav-item">
-                                <a class="nav-link" href="profile.php">
-                                    <span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                    </svg>
-                                    <div class="profile-text">Owner</div>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
+                    <a href="#"><img src="img/logo.jpg" alt="Logo" class="logo-img"></a>
+                </div>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item"><a class="nav-link" href="dashboard.php">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="item.php">Item</a></li>
+                        <li class="nav-item"><a class="nav-link" href="rent.php">Rent</a></li>
+                        <li class="nav-item"><a class="nav-link" href="review.php">Review</a></li>
+                        <li class="nav-item"><a class="nav-link" href="transaction.php">Transaction</a></li>
+                    </ul>
+                </div>
+                <div class="account">
+                    <a href="login.php" class="btn search-button btn-md d-none d-md-block ml-4"><i class="fa fa-user-circle"></i> Owner</a>
                 </div>
             </nav>
 
-            <div id="content-wrapper" class="d-flex flex-column">
-                <div id="content">
-                    <!-- Topbar -->
-                    <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-                        <span class="navbar-brand">Edit Barang</span>
-                    </nav>
-
-                    <div class="container-fluid">
-                        <div class="card shadow mb-4 col-lg-8 mx-auto">
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">Form Edit Barang</h6>
-                            </div>
-                            <div class="card-body">
-                                <form method="POST" enctype="multipart/form-data">
-                                    <div class="mb-3">
-                                        <label class="form-label">Nama Barang</label>
-                                        <input type="text" name="nama" class="form-control" value="<?= htmlspecialchars($item['nama']) ?>" required>
-                                    </div>
-                                     <div class="mb-3">
-                                        <label class="form-label">Kategori</label>
-                                        <input type="text" name="kategori" class="form-control" value="<?= htmlspecialchars($item['kategori']) ?>" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Harga</label>
-                                        <input type="number" name="harga" class="form-control" value="<?= $item['harga'] ?>" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Stok</label>
-                                        <input type="number" name="stok" class="form-control" value="<?= $item['stok'] ?>" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Deskripsi</label>
-                                        <textarea name="deskripsi" class="form-control" rows="4" required><?= htmlspecialchars($item['deskripsi']) ?></textarea>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Kode Voucher</label>
-                                        <input type="text" name="kode_voucher" class="form-control" value="<?= htmlspecialchars($item['kode_voucher']) ?>" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Nama File Gambar</label>
-                                        <input type="text" name="gambar" class="form-control" value="<?= htmlspecialchars($item['gambar']) ?>" required>
-                                    </div>
-                                    <div class="text-end">
-                                        <a href="dashboard.php" class="btn btn-secondary">Kembali</a>
-                                        <a href="dashboard.php" class="btn btn-secondary">Update</a>
-                                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Update</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
+            <!-- Main Content -->
+            <div class="container-fluid">
+                <div class="card shadow mb-4 col-lg-8 mx-auto">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Form Tambah Barang</h6>
                     </div>
-                </div>
+                    <div class="card-body">
+                        <form method="POST" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label class="form-label">Nama Barang</label>
+                                <input type="text" name="nama" class="form-control" required>
+                            </div>
 
-        <script src="../lib/vendor/jquery/jquery.min.js"></script>
-        <script src="../lib/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-        <script src="../lib/vendor/jquery-easing/jquery.easing.min.js"></script>
-        <script src="../lib/js/sb-admin-2.min.js"></script>
+            <div class="mb-3">
+                <label for="id_kategori" class="form-label">Kategori</label>
+                <select name="id_kategori" id="id_kategori" class="form-select" required">
+                    <option value="">-- Pilih Kategori --</option>
+                    <?php while ($cat = mysqli_fetch_assoc($resultCategories)): ?>
+                        <option value="<?= $cat['id_kategori'] ?>" <?= ($cat['id_kategori'] == $item['id_kategori']) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($cat['nama_kategori']) ?>
+                        </option>
+                    <?php endwhile; ?>
+                </select>
+            </div>
 
-    </div>
-</div>
+            <div class="mb-3">
+                <label for="harga" class="form-label">Harga</label>
+                <input type="number" id="harga" name="harga" id="harga" class="form-control" required readonly value="<?= htmlspecialchars($item['harga']) ?>">
+            </div>
+
+            <div class="mb-3">
+                <label for="deskripsi" class="form-label">Deskripsi</label>
+                <textarea id="deskripsi" name="deskripsi" class="form-control" rows="4" required><?= htmlspecialchars($item['deskripsi']) ?></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="kode_voucher" class="form-label">Kode Voucher</label>
+                <input type="text" id="kode_voucher" name="kode_voucher" class="form-control" required minlength="5" maxlength="10" pattern="\d+" title="Hanya angka" value="<?= htmlspecialchars($item['kode_voucher']) ?>">
+            </div>
+
+            <div class="mb-3">
+                <label for="stok" class="form-label">Stok</label>
+                <input type="number" id="stok" name="stok" class="form-control" required value="<?= htmlspecialchars($item['stok']) ?>">
+            </div>
+
+            <div class="mb-3">
+                <label for="gambar" class="form-label">Upload Gambar (kosongkan jika tidak ingin ganti)</label>
+                <input type="file" id="gambar" name="gambar" class="form-control" accept="image/*">
+                <?php if ($item['gambar'] && file_exists("../img/" . $item['gambar'])): ?>
+                    <img src="../img/<?= htmlspecialchars($item['gambar']) ?>" alt="gambar" width="120" class="mt-2">
+                <?php endif; ?>
+            </div>
+
+            <div class="mb-3">
+                <label for="status" class="form-label">Status</label>
+                <select id="status" name="status" class="form-select" required>
+                    <option value="Available" <?= $item['status'] == 'Available' ? 'selected' : '' ?>>Available</option>
+                    <option value="Rented" <?= $item['status'] == 'Rented' ? 'selected' : '' ?>>Rented</option>
+                </select>
+            </div>
+
+            <div class="text-end">
+                <a href="item.php" class="btn btn-secondary">Batal</a>
+                <button type="submit" class="btn btn-primary">Update</button>
+            </div>
+        </form>
+
+<script src="../lib/vendor/jquery/jquery.min.js"></script>
+
+<script>
+document.getElementById('id_kategori').addEventListener('change', function () {
+    const kategoriId = this.value;
+
+    if (kategoriId) {
+        fetch('get_price.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'id_kategori=' + encodeURIComponent(kategoriId)
+        })
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('harga').value = data;
+        })
+        .catch(error => {
+            console.error('Error fetching price:', error);
+        });
+    } else {
+        document.getElementById('harga').value = '';
+    }
+});
+</script>
+
 
 </body>
 </html>

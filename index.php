@@ -1,83 +1,28 @@
 <?php
+session_start();
+if (isset($_GET['logout'])) {
+    session_unset();
+    session_destroy();
+    header("Location: login.php");
+    exit();
+}
 include "config.php";
 $items = mysqli_query($conn, "SELECT * FROM items LIMIT 8");
 
 // Hitung total user
-$total_users = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS total FROM users WHERE role='user'"))['total'];
+$total_user = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS total FROM users WHERE role='user'"))['total'];
 
 // Hitung total item
-$total_items = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS total FROM items"))['total'];
+$total_item = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS total FROM items"))['total'];
 
 // Hitung pesanan terverifikasi
 $total_pesanan = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS total FROM pesanan WHERE status='verified'"))['total'];
 
 // Years growth (bisa statis atau ambil dari setting database)
 $years_growth = 5;
-
-// Tangkap input dari form
-$search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
-
-// Query pencarian
-if (!empty($search)) {
-    $query = "SELECT * FROM items WHERE nama LIKE '%$search%' OR deskripsi LIKE '%$search%'";
-} else {
-    $query = "SELECT * FROM items LIMIT 8";
-}
-
-$items = mysqli_query($conn, $query); 
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
-<style>
-  .search-form {
-  display: flex;
-  justify-content: center;
-  padding: 50px;
-}
-
-.search-wrapper {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  max-width: 1500px;  
-  gap: 25px;
-  padding: 0 2rem;
-}
-
-.search-input {
-  flex: 1;
-  padding: 14px 22px;
-  border: none;
-  border-radius: 30px;
-  font-size: 16px;
-  background-color: #ffffff;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-  outline: none;
-}
-
-.search-btn {
-  padding: 14px 30px;
-  border: none;
-  border-radius: 12px;
-  background-color: #2b3a67;     
-  color: white !important;       
-  font-size: 16px;
-  font-weight: 600;
-  text-decoration: none;        
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-
-.search-btn:hover {
-  background-color: #1f2a4d;
-  transform: translateY(-2px);
-}
-
-</style>
 
 <head>
     <meta charset="UTF-8">
@@ -116,21 +61,14 @@ $items = mysqli_query($conn, $query);
         <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="item.php">Item</a></li>
-                 <li class="nav-item"><a class="nav-link" href="rent.php">Rent</a></li>
-                 <li class="nav-item"><a class="nav-link" href="riwayat.php">History</a></li>
             </ul>
         </div>
-        <!-- Profil -->
-        <div class="profile">
-    <a href="profile.php" class="btn search-button btn-md d-none d-md-block ml-4 text-white fw-normal">
-        <i class="fa fa-user-circle"></i> Profile
-    </a>
-</div>
-
-
-
+       <!-- Account -->
+        <div class="account">
+            <a href="nav.php" class="btn search-button btn-md d-none d-md-block ml-4"><i class="fa fa-user-circle"></i> Account</a>
+        </div>
         <!-- Account End -->
+
     </nav>
     <!-- Navbar End -->
 
@@ -150,11 +88,11 @@ $items = mysqli_query($conn, $query);
   <div class="container">
     <div class="row">
       <div class="col-md-3">
-        <h2><span class="counter" data-target="<?= $total_users ?>"><?= $total_users ?></span>+</h2>
+        <h2><span class="counter" data-target="<?= $total_user ?>"><?= $total_user ?></span>+</h2>
         <p>Happy Clients</p>
       </div>
       <div class="col-md-3">
-        <h2><span class="counter" data-target="<?= $total_items ?>"><?= $total_items ?></span>+</h2>
+        <h2><span class="counter" data-target="<?= $total_item ?>"><?= $total_item ?></span>+</h2>
         <p>Item Ready</p>
       </div>
       <div class="col-md-3">
@@ -200,45 +138,32 @@ $items = mysqli_query($conn, $query);
 </section>
 <!-- Categories End-->
 
-<!-- Search Section -->
-<form action="index.php" method="GET" class="search-form">
-  <div class="search-wrapper">
-    <input type="text" name="search" class="search-input" placeholder="Search Item">
-    <button type="submit" class="search-btn">Search</button>
-
-  </div>
-</form>
-
-
 <!-- Item -->
-    <section class="item-selection text-center py-5">
-      <div class="container">
-        <h2 class="mb-5"><i class="fas fa-box-open"></i> Item Selection</h2>
-        <div class="row">
-          <?php while ($item = mysqli_fetch_assoc($items)): ?>
-          <div class="col-md-3 mb-4">
-            <div class="card">
-              <img src="img/<?= $item['gambar'] ?>" class="card-img-top" alt="<?= htmlspecialchars($item['nama']) ?>">
-              <div class="card-body">
-                <h5 class="card-title"><?= htmlspecialchars($item['nama']) ?></h5>
-                <p class="card-text">Rp. <?= number_format($item['harga']) ?> / Day</p>
-                <p class="card-description"><?= htmlspecialchars($item['deskripsi']) ?></p>
-                <p class="card-stock"><strong>Stok:</strong> <?= $item['stok'] ?> pcs</p>
-                <a href="add_to_cart.php?id=<?= $item['id'] ?>&from=index" class="btn btn-view">Rent</a>
-                <i class="fas fa-heart favorite-icon"></i>
-              </div>
-            </div>
+<section class="item-selection text-center py-5">
+  <div class="container">
+    <h2 class="mb-5 fw-bold"><i class="fas fa-box-open"></i> Item Selection</h2>
+    <div class="row">
+      <?php while ($item = mysqli_fetch_assoc($items)): ?>
+      <div class="col-md-3 mb-4">
+        <div class="card">
+          <img src="img/<?= $item['gambar'] ?>" class="card-img-top" alt="<?= $item['nama'] ?>">
+          <div class="card-body">
+            <h5 class="card-title"><?= $item['nama'] ?></h5>
+            <p class="card-text">Rp. <?= number_format($item['harga']) ?> / Day</p>
+            <p class="card-description"><?= $item['deskripsi'] ?></p>
+            <p class="card-stock"><strong>Stok:</strong> <?= $item['stok'] ?> pcs</p>
+            <a href="#" class="btn btn-view">Rent</a>
+            <i class="fas fa-heart favorite-icon"></i>
           </div>
-          <?php endwhile; ?>
-    </div>
-    <div class="text-center mt-4">
-      <a href="item.php" class="btn btn-view-all">View All</a>
+        </div>
+      </div>
+      <?php endwhile; ?>
     </div>
   </div>
 </section>
-    <!-- Item End -->
+<!-- Item End -->
 
-    <!-- Find an Owner Near You -->
+ <!-- Find an Owner Near You -->
 <section class="find-owner py-5 text-center">
   <div class="container">
     <h2 class="mb-5 fw-bold">Find an Owner Near You</h2>
@@ -289,14 +214,13 @@ $items = mysqli_query($conn, $query);
 </section>
 
 
-
-
 <!-- Footer -->
-    <footer class="footer text-center py-4">
-      <div class="container-fluid">
-        <p>&copy; 2025 Rentify - Team 5. All rights reserved.</p>
-      </div>
-    </footer>
+<footer class="footer text-center py-4">
+  <div class="container-fluid">
+    <p>&copy; 2025 Rentify - Team 5. All rights reserved.</p>
+  </div>
+</footer>
+<!-- Footer End-->
 
 <!-- File JavaScript -->
 <script src="script.js"></script>

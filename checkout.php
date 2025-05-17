@@ -10,29 +10,44 @@ if (!isset($_SESSION['user_id'])) {
 $cart = $_SESSION['cart'] ?? [];
 
 if (empty($cart)) {
-    echo "<script>alert('Keranjang kosong!'); window.location='checkout.php';</script>";
+    echo "<script>alert('Keranjang kosong!'); window.location='navbar.php';</script>";
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $nama = mysqli_real_escape_string($conn, $_POST['nama']);
-    $email = mysqli_real_escape_string($conn, $_POST['email']);
-    $alamat = mysqli_real_escape_string($conn, $_POST['alamat']);
-    $tanggal = $_POST['tanggal'];
-    $durasi = (int) $_POST['durasi'];
-    $user_id = $_SESSION['user_id'];
+// Jika belum mengirim form checkout, tampilkan form
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['step']) && $_POST['step'] === 'form') {
+    // Simpan data user ke session
+    $_SESSION['checkout_data'] = [
+        'nama'    => mysqli_real_escape_string($conn, $_POST['nama']),
+        'email'   => mysqli_real_escape_string($conn, $_POST['email']),
+        'alamat'  => mysqli_real_escape_string($conn, $_POST['alamat']),
+        'tanggal' => $_POST['tanggal'],
+        'durasi'  => (int) $_POST['durasi'],
+    ];
 
-    foreach ($cart as $item) {
-        $item_id = $item['id'];
-        $jumlah = $item['qty'];
-        $status = 'pending';
+    // Ambil item yang dicentang
+    $selected_ids = $_POST['selected_items'] ?? [];
 
-        mysqli_query($conn, "INSERT INTO pesanan (user_id, item_id, jumlah, status) 
-                             VALUES ($user_id, $item_id, $jumlah, '$status')");
+    if (empty($selected_ids)) {
+        echo "<script>alert('Tidak ada item yang dipilih untuk checkout.'); window.location='rent.php';</script>";
+        exit;
     }
 
-    unset($_SESSION['cart']);
-    echo "<script>alert('Pesanan berhasil dibuat!'); window.location='checkout.php';</script>";
+    // Filter data cart hanya untuk item terpilih
+    $filtered = array_filter($cart, function($item) use ($selected_ids) {
+        return in_array($item['id'], $selected_ids);
+    });
+
+    if (empty($filtered)) {
+        echo "<script>alert('Item tidak ditemukan dalam keranjang.'); window.location='rent.php';</script>";
+        exit;
+    }
+
+    // Simpan item ke session
+    $_SESSION['checkout_items'] = array_values($filtered);
+
+    // Redirect ke pembayaran
+    header("Location: pembayaran.php");
     exit;
 }
 ?>
@@ -44,12 +59,70 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   <title>Form Checkout - Rentify</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <style>
+    .checkout-container {
+      background-color: #fff;
+      border-radius: 15px;
+      padding: 40px;
+      max-width: 600px;
+      margin: auto;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      color: #333;
+      font-weight: bold;
+      margin-bottom: 30px;
+    }
+
+    .form-label {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .form-control {
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 15px;
+    }
+
+    .form-control:focus {
+      box-shadow: 0 0 0 0.2rem rgba(43, 58, 103, 0.25);
+      border-color: #2b3a67;
+    }
+
+    .btn-primary {
+      background-color: #2b3a67;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      background-color: #1f2a4d;
+    }
+  </style>
 </head>
 <body>
 <div class="container py-5">
-    <h2 class="text-center mb-4">Formulir Checkout</h2>
+  <div class="checkout-container">
+    <h2 class="text-center">Formulir Checkout</h2>
 
-    <form method="POST" class="mx-auto" style="max-width: 600px;">
+    <form method="POST">
+        <input type="hidden" name="step" value="form">
+
+        <!-- Ambil ulang selected_items dari rent.php jika dikirim -->
+        <?php if (isset($_POST['selected_items'])): ?>
+            <?php foreach ($_POST['selected_items'] as $id): ?>
+                <input type="hidden" name="selected_items[]" value="<?= htmlspecialchars($id) ?>">
+            <?php endforeach; ?>
+        <?php else: ?>
+            <script>alert("Akses tidak valid, silakan kembali."); window.location = 'rent.php';</script>
+        <?php endif; ?>
+
         <div class="mb-3">
             <label class="form-label">Nama Lengkap</label>
             <input type="text" name="nama" class="form-control" required>
@@ -70,11 +143,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <label class="form-label">Durasi Sewa (hari)</label>
             <input type="number" name="durasi" class="form-control" min="1" value="1" required>
         </div>
-      
+
         <div class="text-center">
-        <a href="pembayaran.php" class="btn btn-primary px-5 py-2"> Konfirmasi Pesanan </a>
-    </div>
+            <button type="submit" class="btn btn-primary px-5 py-2">Konfirmasi Pesanan</button>
+        </div>
     </form>
+  </div>
 </div>
 </body>
 </html>
