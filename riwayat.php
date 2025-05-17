@@ -46,16 +46,21 @@ $result = mysqli_query($conn, $query);
         </button>
         <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
             <ul class="navbar-nav">
-                <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="navbar.php">Home</a></li>
                 <li class="nav-item"><a class="nav-link" href="item.php">Item</a></li>
                  <li class="nav-item"><a class="nav-link" href="rent.php">Rent</a></li>
-                 <li class="nav-item"><a class="nav-link" href="ulasan.php">History</a></li>
+                 <li class="nav-item"><a class="nav-link" href="riwayat.php">History</a></li>
             </ul>
         </div>
-        <!-- Account -->
-        <div class="account">
-            <a href="login.php" class="btn search-button btn-md d-none d-md-block ml-4"><i class="fa fa-user-circle"></i> Account</a>
-        </div>
+        <!-- Profil -->
+        <div class="profile">
+    <a href="profile.php" class="btn search-button btn-md d-none d-md-block ml-4 text-white fw-normal">
+        <i class="fa fa-user-circle"></i> Profile
+    </a>
+</div>
+
+
+
         <!-- Account End -->
     </nav>
     <!-- Navbar End -->
@@ -88,9 +93,20 @@ $result = mysqli_query($conn, $query);
                         <?php if ($row['status'] == 'verified'): ?>
                             <a href="ulasan.php?pesanan_id=<?= $row['id'] ?>" class="btn btn-primary">Beri Ulasan</a>
                         <?php endif; ?>
-                        <?php if ($row['status'] != 'verified'): ?>
-                            <a href="batal_pesanan.php?pesanan_id=<?= $row['id'] ?>" class="btn btn-danger">Batalkan</a>
-                        <?php endif; ?>
+                     <?php if ($row['status'] == 'pending'): ?>
+        <a href="batal_pesanan.php?pesanan_id=<?= $row['id'] ?>" 
+           class="btn btn-danger"
+           onclick="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini?')">
+           Batalkan
+        </a>
+    <?php elseif ($row['status'] == 'cancelled'): ?>
+    <a href="hapus_pesanan.php?pesanan_id=<?= $row['id'] ?>"
+       class="btn btn-secondary"
+       onclick="return confirm('Apakah Anda yakin ingin menghapus pesanan ini secara permanen?')">
+        Hapus
+    </a>
+<?php endif; ?>
+
                     </td>
                 </tr>
             <?php endwhile; ?>

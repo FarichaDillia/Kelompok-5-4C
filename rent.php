@@ -19,7 +19,6 @@ if (isset($_GET['action'], $_GET['id'])) {
                     if ($item['qty'] > 1) {
                         $item['qty']--;
                     } else {
-                        // Hapus item jika qty == 1 dan dikurangi
                         $_SESSION['cart'] = array_filter($_SESSION['cart'], function($i) use ($id) {
                             return $i['id'] != $id;
                         });
@@ -34,11 +33,16 @@ if (isset($_GET['action'], $_GET['id'])) {
     header("Location: rent.php");
     exit;
 }
+if (isset($_GET['verifikasi'])) {
+    $id = $_GET['verifikasi'];
+    mysqli_query($conn, "UPDATE pesanan SET status='verified' WHERE id = $id");
+}
+
 
 $cart = $_SESSION['cart'] ?? [];
 
 if (count($cart) == 0) {
-    echo "<script>alert('Keranjang kosong!'); window.location='index.php';</script>";
+    echo "<script>alert('Keranjang kosong!'); window.location='navbar.php';</script>";
     exit;
 }
 ?>
@@ -55,99 +59,107 @@ if (count($cart) == 0) {
 <body class="d-flex flex-column min-vh-100">
     <style>
         body {
-        background-color: #77acc7; 
-    }
+            background-color: #77acc7; 
+        }
     </style>
 
-<!-- Navbar Start -->
-        <nav class="navbar navbar-expand-lg">
+<nav class="navbar navbar-expand-lg">
     <div class="container">
-         <!-- Logo -->
-         <a href="#"><img src="img/logo.jpg" alt="Logo" class="logo-img"></a>
-        </div>
-         <!-- Logo End -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-            <ul class="navbar-nav">
-                <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="item.php">Item</a></li>
-                 <li class="nav-item"><a class="nav-link" href="#">Rent</a></li>
-                 <li class="nav-item"><a class="nav-link" href="riwayat.php">History</a></li>
-            </ul>
-        </div>
-        <!-- Account -->
-        <div class="account">
-            <a href="login.php" class="btn search-button btn-md d-none d-md-block ml-4"><i class="fa fa-user-circle"></i> Account</a>
-        </div>
-        <!-- Account End -->
-    </nav>
-    <!-- Navbar End -->
-
-<!-- Isi Keranjang -->
-<div class="container rent-section py-5">
-    
-    <h2 class="section-title mb-5 fw-bold">
-  <i class="fas fa-shopping-cart"></i> Keranjang Sewa
-</h2>
-
-
-    <table class="table table-bordered text-center align-middle">
-        <thead class="table-dark">
-            <tr>
-                <th>Gambar</th>
-                <th>Nama</th>
-                <th>Harga</th>
-                <th>Jumlah</th>
-                <th>Total</th>
-                <th>Hapus</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php $grandTotal = 0; ?>
-            <?php foreach ($cart as $item): ?>
-                <tr>
-                    <td><img src="img/<?= htmlspecialchars($item['gambar']) ?>" width="80"></td>
-                    <td><?= htmlspecialchars($item['nama']) ?></td>
-                    <td>Rp. <?= number_format($item['harga']) ?></td>
-                    <td>
-                        <a href="rent.php?action=minus&id=<?= $item['id'] ?>" class="btn btn-sm btn-warning">-</a>
-                        <span class="mx-2"><?= $item['qty'] ?></span>
-                        <a href="rent.php?action=plus&id=<?= $item['id'] ?>" class="btn btn-sm btn-primary">+</a>
-                    </td>
-                    <td>Rp. <?= number_format($item['harga'] * $item['qty']) ?></td>
-                    <td>
-                        <a href="remove_from_cart.php?id=<?= $item['id'] ?>" 
-   class="btn btn-danger btn-sm"
-   onclick="return confirm('Yakin ingin menghapus barang ini dari keranjang?');">
-   <i class="fas fa-trash"></i> Hapus
-</a>
-
-                    </td>
-                </tr>
-                <?php $grandTotal += $item['harga'] * $item['qty']; ?>
-            <?php endforeach; ?>
-            <tr>
-                <td colspan="4" class="text-end"><strong>Total Keseluruhan:</strong></td>
-                <td colspan="2"><strong>Rp. <?= number_format($grandTotal) ?></strong></td>
-            </tr>
-        </tbody>
-    </table>
-
-    <div class="text-center mt-4">
-        <a href="checkout.php" class="btn btn-success px-5 py-2">
-            <i class="fas fa-check-circle"></i> Checkout Semua
+        <a href="#"><img src="img/logo.jpg" alt="Logo" class="logo-img"></a>
+    </div>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" href="navbar.php">Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="item.php">Item</a></li>
+            <li class="nav-item"><a class="nav-link" href="rent.php">Rent</a></li>
+            <li class="nav-item"><a class="nav-link" href="riwayat.php">History</a></li>
+        </ul>
+    </div>
+    <div class="profile">
+        <a href="profile.php" class="btn search-button btn-md d-none d-md-block ml-4 text-white fw-normal">
+            <i class="fa fa-user-circle"></i> Profile
         </a>
     </div>
+</nav>
+
+<div class="container rent-section py-5">
+    <h2 class="section-title mb-5 fw-bold">
+        <i class="fas fa-shopping-cart"></i> Keranjang Sewa
+    </h2>
+
+    <form action="checkout.php" method="POST">
+        <table class="table table-bordered text-center align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>
+                        <input type="checkbox" id="select_all"> Pilih Semua
+                    </th>
+                    <th>Gambar</th>
+                    <th>Nama</th>
+                    <th>Harga</th>
+                    <th>Jumlah</th>
+                    <th>Total</th>
+                    <th>Hapus</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php $grandTotal = 0; ?>
+                <?php foreach ($cart as $item): ?>
+                    <tr>
+                        <td>
+                            <input type="checkbox" name="selected_items[]" value="<?= $item['id'] ?>">
+                        </td>
+                        <td><img src="img/<?= htmlspecialchars($item['gambar']) ?>" width="80"></td>
+                        <td><?= htmlspecialchars($item['nama']) ?></td>
+                        <td>Rp. <?= number_format($item['harga']) ?></td>
+                        <td>
+                            <a href="rent.php?action=minus&id=<?= $item['id'] ?>" class="btn btn-sm btn-warning">-</a>
+                            <span class="mx-2"><?= $item['qty'] ?></span>
+                            <a href="rent.php?action=plus&id=<?= $item['id'] ?>" class="btn btn-sm btn-primary">+</a>
+                        </td>
+                        <td>Rp. <?= number_format($item['harga'] * $item['qty']) ?></td>
+                        <td>
+                            <a href="remove_from_cart.php?id=<?= $item['id'] ?>" class="btn btn-danger btn-sm"
+                               onclick="return confirm('Yakin ingin menghapus barang ini dari keranjang?');">
+                               <i class="fas fa-trash"></i> Hapus
+                            </a>
+                        </td>
+                    </tr>
+                    <?php $grandTotal += $item['harga'] * $item['qty']; ?>
+                <?php endforeach; ?>
+                <tr>
+                    <td colspan="5" class="text-end"><strong>Total Keseluruhan:</strong></td>
+                    <td colspan="2"><strong>Rp. <?= number_format($grandTotal) ?></strong></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-success px-5 py-2">
+                <i class="fas fa-check-circle"></i> Checkout
+            </button>
+        </div>
+    </form>
 </div>
 
-<!-- Footer -->
-    <footer class="footer text-center py-4">
-      <div class="container-fluid">
+<footer class="footer text-center py-4 mt-auto">
+    <div class="container-fluid">
         <p>&copy; 2025 Rentify - Team 5. All rights reserved.</p>
-      </div>
-    </footer>
+    </div>
+</footer>
+
+<!-- JavaScript untuk "Pilih Semua" -->
+<script>
+document.getElementById('select_all').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('input[name="selected_items[]"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+    });
+});
+</script>
 
 </body>
 </html>

@@ -83,26 +83,34 @@ $items = mysqli_query($conn, $query);
 
 </style>
 <body>
-    <!-- Navbar Start -->
-    <nav class="navbar navbar-expand-lg">
+   <!-- Navbar Start -->
+        <nav class="navbar navbar-expand-lg">
     <div class="container">
          <!-- Logo -->
          <a href="#"><img src="img/logo.jpg" alt="Logo" class="logo-img"></a>
-    </div>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-        <ul class="navbar-nav">
-            <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-            <li class="nav-item"><a class="nav-link" href="#item">Item</a></li>
-            <li class="nav-item"><a class="nav-link" href="rent.php">Rent</a></li>
-            <li class="nav-item"><a class="nav-link" href="riwayat.php">History</a></li>
-        </ul>
-    </div>
-    <div class="account">
-        <a href="login.php" class="btn search-button btn-md d-none d-md-block ml-4"><i class="fa fa-user-circle"></i> Account</a>
-    </div>
+        </div>
+         <!-- Logo End -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link" href="navbar.php">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="item.php">Item</a></li>
+                 <li class="nav-item"><a class="nav-link" href="rent.php">Rent</a></li>
+                 <li class="nav-item"><a class="nav-link" href="riwayat.php">History</a></li>
+            </ul>
+        </div>
+        <!-- Profil -->
+        <div class="profile">
+    <a href="profile.php" class="btn search-button btn-md d-none d-md-block ml-4 text-white fw-normal">
+        <i class="fa fa-user-circle"></i> Profile
+    </a>
+</div>
+
+
+
+        <!-- Account End -->
     </nav>
     <!-- Navbar End -->
 
@@ -115,12 +123,9 @@ $items = mysqli_query($conn, $query);
 </form>
 
     <!-- Item -->
-    <section class="item-selection text-center py-5">
+          <section class="item-selection text-center py-5">
       <div class="container">
-  
-        <h2 class="section-title mb-5 fw-bold">
-  <i class="fas fa-box-open"></i> Item Selection
-</h2>
+        <h2 class="mb-5 fw-bold"><i class="fas fa-box-open"></i> Item Selection</h2>
         <div class="row">
           <?php while ($item = mysqli_fetch_assoc($items)): ?>
           <div class="col-md-3 mb-4">
@@ -131,7 +136,7 @@ $items = mysqli_query($conn, $query);
                 <p class="card-text">Rp. <?= number_format($item['harga']) ?> / Day</p>
                 <p class="card-description"><?= htmlspecialchars($item['deskripsi']) ?></p>
                 <p class="card-stock"><strong>Stok:</strong> <?= $item['stok'] ?> pcs</p>
-                <a href="add_to_cart.php?id=<?= $item['id'] ?>&from=item" class="btn btn-view">Rent</a>
+                <a href="item-detail.php?id=<?= $item['id'] ?>&from=index" class="btn btn-view">Rent</a>
                 <i class="fas fa-heart favorite-icon"></i>
               </div>
             </div>

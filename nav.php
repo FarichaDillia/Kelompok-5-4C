@@ -8,8 +8,6 @@
     <link rel="stylesheet" href="style.css">
     <style>
         body {
-            font-family: sans-serif;
-            background-color: #f8f9fa;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -28,7 +26,7 @@
             margin-bottom: 30px;
         }
         .panel-button {
-            background-color: #007bff;
+            background-color: #3f5c8b;
             color: white;
             border: none;
             padding: 15px 30px;
@@ -47,7 +45,7 @@
 </head>
 <body>
     <div class="panel-choice-container">
-        <h2 class="panel-title">Sign-in To Your Panel</h2>
+        <h2 class="panel-title fw-bold">Sign-in To Your Panel</h2>
         <a href="login.php?role_login=admin">
     <button class="panel-button">Admin Panel</button>
 </a>

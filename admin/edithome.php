@@ -53,34 +53,80 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Pesanan - Rentify</title>
+    <title>Dashboard Admin - Rentify</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../lib/vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
+    <link href="../lib/css/sb-admin-2.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
-
-<div class="container mt-5">
-    <h2>Edit Pesanan</h2>
-
-    <form method="POST">
-        <div class="mb-3">
-            <label for="item_name" class="form-label">Nama Barang</label>
-            <input type="text" class="form-control" id="item_name" value="<?= htmlspecialchars($pesanan['item_name']) ?>" disabled>
+<body id="page-top">
+<div id="wrapper">
+    <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+            <!-- Navbar Start -->
+        <nav class="navbar navbar-expand-lg">
+    <div class="container">
+         <!-- Logo -->
+         <a href="#"><img src="../img/logo.jpg" alt="Logo" class="logo-img"></a>
         </div>
-
-        <div class="mb-3">
-            <label for="jumlah" class="form-label">Jumlah</label>
-            <input type="number" class="form-control" id="jumlah" name="jumlah" value="<?= htmlspecialchars($pesanan['jumlah']) ?>" required>
+         <!-- Logo End -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+            <ul class="navbar-nav">
+                 <li class="nav-item">
+                    <a class="nav-link <?php if($page == 'home') echo 'active'; ?>" href="dashboard.php">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?php if($page == 'item') echo 'active'; ?>" href="item.php">Item</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?php if($page == 'rent') echo 'active'; ?>" href="rent.php">Rent</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?php if($page == 'review') echo 'active'; ?>" href="review.php">Review</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?php if($page == 'transaction') echo 'active'; ?>" href="transaction.php">Transaction</a>
+                </li>
+            </ul>
         </div>
-
-        <div class="mb-3">
-            <label for="periode" class="form-label">Periode</label>
-            <input type="text" class="form-control" id="periode" name="periode" value="<?= htmlspecialchars($pesanan['periode']) ?>" required>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Update Pesanan</button>
-        <a href="dashboard.php" class="btn btn-secondary">Kembali</a>
-    </form>
+        <!-- Profil -->
+        <div class="profile">
+    <a href="../profile.php" class="btn search-button btn-md d-none d-md-block ml-4 text-white fw-normal">
+        <i class="fa fa-user-circle"></i> Profile
+    </a>
 </div>
+    </nav>
+    <!-- Navbar End -->
+     
+ <!-- Main Content -->
+            <div class="container-fluid">
+                <div class="card shadow mb-4 col-lg-8 mx-auto">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Form Tambah Barang</h6>
+                    </div>
+                    <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Nama Barang</label>
+                                <input type="text" name="nama" class="form-control" required>
+                            </div>
+
+                    <div class="mb-3">
+                        <label for="jumlah" class="form-label">Jumlah</label>
+                        <input type="number" class="form-control" id="jumlah" name="jumlah" value="<?= htmlspecialchars($pesanan['jumlah']) ?>" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="periode" class="form-label">Periode</label>
+                        <input type="text" class="form-control" id="periode" name="periode" value="<?= htmlspecialchars($pesanan['periode']) ?>" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Update Pesanan</button>
+                    <a href="dashboard.php" class="btn btn-secondary">Kembali</a>
+                </form>
+            </div>
 
 <script src="../lib/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>

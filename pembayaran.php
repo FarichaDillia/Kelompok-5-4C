@@ -2,6 +2,15 @@
 session_start();
 include "config.php";
 
+// 1. Gunakan prepared statement (lebih aman dari SQL injection)
+$stmt = $conn->prepare("INSERT INTO pembayaran (pesanan_id, metode, rekening, atas_nama, tanggal_bayar, total_bayar) VALUES (?, ?, ?, ?, ?, ?)");
+$stmt->bind_param("issssd", $pesanan_id, $metode, $rekening, $atas_nama, $tanggal_bayar, $total_bayar);
+$stmt->execute();
+
+// 2. Tambahkan update ke pesanan
+mysqli_query($conn, "UPDATE pesanan SET status = 'pending' WHERE id = $pesanan_id");
+
+
 // Pastikan user sudah login
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -10,7 +19,7 @@ if (!isset($_SESSION['user_id'])) {
 
 // Cek jika ada pesanan
 if (empty($_SESSION['cart'])) {
-    echo "<script>alert('Keranjang kosong!'); window.location='index.php';</script>";
+    echo "<script>alert('Keranjang kosong!'); window.location='navbar.php';</script>";
     exit;
 }
 
@@ -40,6 +49,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Simpan pesanan ke database
     $query = "INSERT INTO riwayat_pesanan (user_id, item_id, jumlah, total_harga, status) VALUES ";
+    // Ambil data terakhir yang baru saja dimasukkan ke riwayat_pesanan
+$last_id = mysqli_insert_id($conn);
+$get = mysqli_query($conn, "SELECT * FROM riwayat_pesanan WHERE id = $last_id");
+$data = mysqli_fetch_assoc($get);
+
+// Ambil data dari form
+$user_id = $_SESSION['user_id'];
+$item_id = $_POST['item_id'];
+$jumlah = $_POST['jumlah'];
+$total_price = $_POST['total_price'];
+
+// Masukkan pesanan ke tabel 'pesanan'
+$start_date = date('Y-m-d');
+$end_date = date('Y-m-d', strtotime($start_date. ' +1 day'));
+$periode = 1;
+
+// Setelah pembayaran berhasil
+$insertRiwayat = mysqli_query($conn, "INSERT INTO riwayat_pesanan (user_id, item_id, jumlah, total_harga, status)
+    SELECT p.user_id, p.item_id, p.jumlah, p.total_price, 'pending'
+    FROM pesanan p
+    WHERE p.id = $pesanan_id
+");
+
+
+
     $values = [];
     foreach ($_SESSION['cart'] as $item) {
         $values[] = "($user_id, {$item['id']}, {$item['qty']}, {$item['harga']} * {$item['qty']}, 'pending')";
@@ -70,47 +104,100 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <title>Pembayaran - Rentify</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        .payment-container {
+    background-color: #fff;
+    border-radius: 15px;
+    padding: 40px;
+    max-width: 600px;
+    margin: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  h2 {
+    color: #333;
+    font-weight: bold;
+    margin-bottom: 30px;
+  }
+
+  .form-label {
+    font-weight: 600;
+    color: #333;
+  }
+
+  .form-control {
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 15px;
+  }
+
+  .form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(43, 58, 103, 0.25);
+    border-color: #2b3a67;
+  }
+
+  .btn-success {
+    background-color: #2b3a67;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
+  }
+
+  .btn-success:hover {
+    background-color: #1f2a4d;
+  }
+    </style>
 </head>
 <body>
-    <div class="container py-5">
-        <h2 class="text-center mb-4">Form Pembayaran</h2>
-        
-        <form method="POST" class="mx-auto" style="max-width: 600px;">
-            <!-- Input Metode Pembayaran -->
-            <div class="mb-3">
-                <label class="form-label">Metode Pembayaran</label>
-                <select name="metode" class="form-control" required>
-                    <option value="transfer_bank">Transfer Bank</option>
-                    <option value="gopay">GoPay</option>
-                    <option value="ovo">OVO</option>
-                </select>
-            </div>
-            <!-- Input Nomor Rekening -->
-            <div class="mb-3">
-                <label class="form-label">Nomor Rekening</label>
-                <input type="text" name="rekening" class="form-control" required>
-            </div>
-            <!-- Input Nama Pemilik Rekening -->
-            <div class="mb-3">
-                <label class="form-label">Nama Pemilik Rekening</label>
-                <input type="text" name="atas_nama" class="form-control" required>
-            </div>
-            <!-- Input Tanggal Pembayaran -->
-            <div class="mb-3">
-                <label class="form-label">Tanggal Pembayaran</label>
-                <input type="date" name="tanggal_bayar" class="form-control" required>
-            </div>
-            <!-- Input Kode Voucher -->
-            <div class="mb-3">
-                <label class="form-label">Kode Voucher (Jika Ada)</label>
-                <input type="text" name="kode_voucher" class="form-control">
-            </div>
-            
-            <!-- Tombol Submit -->
-            <div class="text-center">
-                <button type="submit" class="btn btn-success px-5 py-2">Konfirmasi Pembayaran</button>
-            </div>
-        </form>
+  <div class="container py-5">
+    <div class="payment-container">
+      <h2 class="text-center">Form Pembayaran</h2>
+      
+      <form method="POST">
+          <!-- Metode Pembayaran -->
+          <div class="mb-3">
+              <label class="form-label">Metode Pembayaran</label>
+              <select name="metode" class="form-control" required>
+                  <option value="transfer_bank">Transfer Bank</option>
+                  <option value="gopay">GoPay</option>
+                  <option value="ovo">OVO</option>
+              </select>
+          </div>
+          
+          <!-- Nomor Rekening -->
+          <div class="mb-3">
+              <label class="form-label">Nomor Rekening</label>
+              <input type="text" name="rekening" class="form-control" required>
+          </div>
+
+          <!-- Nama Pemilik Rekening -->
+          <div class="mb-3">
+              <label class="form-label">Nama Pemilik Rekening</label>
+              <input type="text" name="atas_nama" class="form-control" required>
+          </div>
+
+          <!-- Tanggal Pembayaran -->
+          <div class="mb-3">
+              <label class="form-label">Tanggal Pembayaran</label>
+              <input type="date" name="tanggal_bayar" class="form-control" required>
+          </div>
+
+          <!-- Kode Voucher -->
+          <div class="mb-4">
+              <label class="form-label">Kode Voucher (Jika Ada)</label>
+              <input type="text" name="kode_voucher" class="form-control">
+          </div>
+
+          <!-- Tombol Submit -->
+          <div class="text-center">
+              <button type="submit" class="btn btn-success">Konfirmasi Pembayaran</button>
+          </div>
+      </form>
     </div>
+  </div>
 </body>
+
 </html>

@@ -2,162 +2,136 @@
 session_start();
 include "config.php";
 
-// Cek apakah sudah login
 if (!isset($_SESSION["user_id"])) {
     header("Location: login.php");
     exit();
 }
 
-// Ambil data user dari database
 $user_id = $_SESSION["user_id"];
 $result = mysqli_query($conn, "SELECT * FROM users WHERE id = '$user_id'");
 $user = mysqli_fetch_assoc($result);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profil</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            background-color: #f0f8ff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
+  <meta charset="UTF-8">
+  <title>My Profile - Rentify</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(to right, #77acc7, #a1c4fd);
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-        .profile-container {
-            background-color: #e0f2f7;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            width: 350px;
-            text-align: center;
-            position: relative;
-        }
+    .profile-card {
+      background-color: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
+      padding: 50px 35px;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      animation: fadeIn 0.6s ease;
+    }
 
-        .profile-header {
-            background-color: #4dd0e1;
-            border-radius: 10px 10px 0 0;
-            padding: 20px 0;
-            margin-bottom: 20px;
-        }
+    .profile-icon {
+      width: 100px;
+      height: 100px;
+      background-color: #2e3a59;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto 25px;
+    }
 
-        .avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background-color: #ffb74d;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0 auto 10px;
-        }
+    .profile-icon i {
+      color: #ffffff;
+      font-size: 45px;
+    }
 
-        .avatar::before {
-            content: '';
-            display: block;
-            width: 50%;
-            height: 50%;
-            background-color: #212121;
-            border-radius: 50%;
-        }
+    .username-display {
+      font-size: 24px;
+      font-weight: bold;
+      color: #2e3a59;
+      margin-top: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
 
-        .username {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #263238;
-            margin-bottom: 5px;
-        }
+    .profile-info {
+      text-align: left;
+      margin-top: 20px;
+      background-color: #f2f6fa;
+      padding: 20px;
+      border-radius: 12px;
+    }
 
-        .role {
-            color: #607d8b;
-            font-size: 0.9em;
-            margin-bottom: 15px;
-        }
+    .profile-info p {
+      font-size: 15px;
+      margin: 12px 0;
+      color: #333;
+    }
 
-        .info {
-            text-align: left;
-            margin-bottom: 15px;
-        }
+    .profile-info span {
+      font-weight: bold;
+      color: #2e3a59;
+      display: inline-block;
+      width: 100px;
+    }
 
-        .info p {
-            margin: 8px 0;
-            color: #37474f;
-        }
+    .btn-group {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+    }
 
-        .info strong {
-            font-weight: bold;
-            color: #00838f;
-        }
+    .btn-custom {
+      background-color: #3f5c8b;
+      color: #fff;
+      padding: 10px 25px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: 0.3s;
+    }
 
-        .actions {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            margin-top: 20px;
-        }
+    .btn-custom:hover {
+      background-color: #2b4066;
+    }
 
-        .button {
-            background-color: #fdd835;
-            color: #212121;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 0.9em;
-        }
-
-        .button:hover {
-            background-color: #fbc02d;
-        }
-
-        .logout-button {
-            background-color: #ffeb3b;
-        }
-
-        .logout-button:hover {
-            background-color: #f9a825;
-        }
-
-        .back-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 1.5em;
-            color: #607d8b;
-            text-decoration: none;
-        }
-
-        .back-button:hover {
-            color: #263238;
-        }
-    </style>
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+  </style>
 </head>
 <body>
-    
-    <div class="profile-container">
-        <div class="profile-header">
-            <div class="avatar"></div>
-            <div class="username"><?php echo htmlspecialchars($user["username"]); ?></div>
-            <div class="role"><?php echo htmlspecialchars($user["role"]); ?></div>
-        </div>
-        <div class="info">
-            <p><strong>Username:</strong> <?php echo htmlspecialchars($user["username"] ?? "-"); ?></p>
-            <p><strong>Email:</strong> <?php echo htmlspecialchars($user["email"]); ?></p>
-            
-        </div>
-        <div class="actions">
-           <a href="logout.php" class="button logout-button">Log Out</a>
 
-            <a href="edit.php" class="button">Edit Profile</a>
-        </div>
-    </div>
+<div class="profile-card">
+  <div class="profile-icon">
+    <i class="fas fa-user"></i>
+  </div>
+
+  <h2 class="username-display"><?= strtoupper(htmlspecialchars($user['username'])) ?></h2>
+
+  <div class="profile-info">
+    <p><span>Email:</span> <?= htmlspecialchars($user['email']) ?></p>
+    <p><span>Alamat:</span> <?= htmlspecialchars($user['alamat'] ?? '-') ?></p>
+    <p><span>No. Telepon:</span> <?= htmlspecialchars($user['no_telp'] ?? '-') ?></p>
+  </div>
+
+  <div class="btn-group">
+    <a href="logout.php" class="btn-custom">Log Out</a>
+    <a href="edit.php" class="btn-custom">Edit Profile</a>
+  </div>
+</div>
+
 </body>
 </html>
