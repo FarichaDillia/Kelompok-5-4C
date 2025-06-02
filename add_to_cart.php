@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 if (!isset($_GET['id'])) {
-    header("Location: item.php");
+    header("Location: item.php?alert=notfound");
     exit;
 }
 
@@ -16,16 +16,12 @@ $id = intval($_GET['id']);
 $item = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM items WHERE id=$id"));
 
 if (!$item) {
-    echo "<script>alert('Item tidak ditemukan'); window.location='item.php';</script>";
+    header("Location: item.php?alert=notfound");
     exit;
 }
 
-// Tambahkan item ke keranjang
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
-
-
-
 }
 
 $found = false;
@@ -48,12 +44,15 @@ if (!$found) {
     ];
 }
 
-// Tentukan asal redirect
-$redirect = 'item.php';
-if (isset($_GET['from']) && $_GET['from'] === 'index') {
-    $redirect = 'index.php';
+$redirect = 'item.php?success=added';
+if (isset($_GET['from'])) {
+    if ($_GET['from'] === 'navbar') {
+        $redirect = 'navbar.php?success=added';
+    } elseif ($_GET['from'] === 'detail') {
+        $redirect = 'item-detail.php?id=' . $id . '&success=added';
+    }
 }
 
-echo "<script>alert('Item berhasil ditambahkan ke keranjang!'); window.location='$redirect';</script>";
+header("Location: $redirect");
 exit;
 ?>

@@ -8,9 +8,45 @@ if (!isset($_SESSION["user_id"])) {
 }
 
 $user_id = $_SESSION["user_id"];
+
+// Proses update data jika form disubmit
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $username = $_POST['username'];
+    $email    = $_POST['email'];
+    $alamat   = $_POST['alamat'];
+    $no_telp  = $_POST['no_telp'];
+    $password = $_POST['password'];
+
+    // Validasi dasar
+    if (empty($username) || empty($email)) {
+        $error = "Username dan email tidak boleh kosong!";
+    } else {
+        // Update dengan atau tanpa password
+        if (!empty($password)) {
+            $query = "UPDATE users SET username=?, email=?, alamat=?, no_telp=?, password=? WHERE id=?";
+            $stmt  = mysqli_prepare($conn, $query);
+            mysqli_stmt_bind_param($stmt, "sssssi", $username, $email, $alamat, $no_telp, $password, $user_id);
+        } else {
+            $query = "UPDATE users SET username=?, email=?, alamat=?, no_telp=? WHERE id=?";
+            $stmt  = mysqli_prepare($conn, $query);
+            mysqli_stmt_bind_param($stmt, "ssssi", $username, $email, $alamat, $no_telp, $user_id);
+        }
+
+        // Eksekusi dan redirect
+        if (mysqli_stmt_execute($stmt)) {
+            header("Location: profile.php?success=1");
+            exit;
+        } else {
+            $error = "Gagal update profil: " . mysqli_error($conn);
+        }
+    }
+}
+
+// Ambil data user untuk ditampilkan
 $result = mysqli_query($conn, "SELECT * FROM users WHERE id = '$user_id'");
-$user = mysqli_fetch_assoc($result);
+$user   = mysqli_fetch_assoc($result);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,6 +54,7 @@ $user = mysqli_fetch_assoc($result);
   <title>My Profile - Rentify</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     body {
       background: linear-gradient(to right, #77acc7, #a1c4fd);
@@ -128,10 +165,23 @@ $user = mysqli_fetch_assoc($result);
   </div>
 
   <div class="btn-group">
-    <a href="logout.php" class="btn-custom">Log Out</a>
+    <a href="javascript:history.back()" class="btn-custom">Kembali</a>
     <a href="edit.php" class="btn-custom">Edit Profile</a>
+    <a href="logout.php" class="btn-custom">Log Out</a>
   </div>
 </div>
+
+<?php if (isset($_GET['success'])): ?>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+Swal.fire({
+  icon: 'success',
+  title: 'Profil berhasil diperbarui!',
+  showConfirmButton: false,
+  timer: 2000
+});
+</script>
+<?php endif; ?>
 
 </body>
 </html>

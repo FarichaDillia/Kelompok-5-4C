@@ -2,43 +2,45 @@
 session_start();
 include "../config.php";
 
-// Cek apakah pengguna sudah login dan memiliki role admin
-if (!isset($_SESSION["role"]) || $_SESSION["role"] != "admin") {
-    header("Location: ../login.php");
+$id = $_GET['id'] ?? null;
+
+function showAlert($icon, $title, $text, $redirect) {
+    echo "
+    <!DOCTYPE html>
+    <html lang='en'>
+    <head>
+        <meta charset='UTF-8'>
+        <title>Alert</title>
+        <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+    </head>
+    <body>
+        <script>
+            Swal.fire({
+                icon: '$icon',
+                title: '$title',
+                text: '$text',
+                showConfirmButton: false,
+                timer: 2000
+            }).then(() => {
+                window.location.href = '$redirect';
+            });
+        </script>
+    </body>
+    </html>";
     exit;
 }
 
-// Cek apakah ID item ada di URL
-if (isset($_GET['id'])) {
-    $id = $_GET['id'];
+if (!$id || !is_numeric($id)) {
+    showAlert("error", "ID Tidak Valid", "Data tidak dapat diproses", "item.php");
+}
 
-    // Ambil data item berdasarkan ID
-    $query = "SELECT * FROM items WHERE id = $id";
-    $result = mysqli_query($conn, $query);
+// Eksekusi soft delete
+$stmt = $conn->prepare("UPDATE items SET status = 'Deleted' WHERE id = ?");
+$stmt->bind_param("i", $id);
 
-    // Jika item tidak ditemukan
-    if (mysqli_num_rows($result) == 0) {
-        echo "<script>alert('Item tidak ditemukan.'); window.location.href='item.php';</script>";
-        exit;
-    }
-
-    // Ambil data gambar dari item yang akan dihapus
-    $item = mysqli_fetch_assoc($result);
-    $gambar = $item['gambar'];
-
-    // Hapus gambar dari folder jika ada
-    if (file_exists("../img/" . $gambar) && $gambar != "") {
-        unlink("../img/" . $gambar);
-    }
-
-    // Hapus item dari database
-    $delete_query = "DELETE FROM items WHERE id = $id";
-    if (mysqli_query($conn, $delete_query)) {
-        echo "<script>alert('Item berhasil dihapus!'); window.location.href='item.php';</script>";
-    } else {
-        echo "<script>alert('Gagal menghapus item.'); window.location.href='item.php';</script>";
-    }
+if ($stmt->execute()) {
+    showAlert("success", "Berhasil!", "Item berhasil dihapus", "item.php");
 } else {
-    echo "<script>alert('ID item tidak ditemukan.'); window.location.href='item.php';</script>";
+    showAlert("error", "Gagal!", "Item gagal dihapus", "item.php");
 }
 ?>

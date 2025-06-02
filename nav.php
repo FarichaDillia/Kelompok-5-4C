@@ -46,11 +46,11 @@
 <body>
     <div class="panel-choice-container">
         <h2 class="panel-title fw-bold">Sign-in To Your Panel</h2>
-        <a href="login.php?role_login=admin">
-    <button class="panel-button">Admin Panel</button>
-</a>
-<a href="login.php?role_login=owner">
+<a href="login.php?role_login=admin">
     <button class="panel-button">Owner Panel</button>
+</a>
+ <a href="login.php?role_login=owner">
+    <button class="panel-button">Admin Panel</button>
 </a>
 <a href="login.php?role_login=user">
     <button class="panel-button">Renter Panel</button>

@@ -1,32 +1,37 @@
 <?php
 session_start();
-if (!isset($_SESSION["role"]) || $_SESSION["role"] != "admin") {
+include "../config.php";
+
+if (!isset($_SESSION["user_id"]) || $_SESSION["role"] !== "owner") {
     header("Location: ../login.php");
     exit;
 }
-include "../config.php";
 
-$total_user = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM users WHERE role='user'"))['total'];
-$total_item = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM items"))['total'];
-$total_pesanan = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM pesanan WHERE status='verified'"))['total'];
+$user_id = $_SESSION["user_id"]; // ID owner yang login
 
+// Total item milik owner
+$item_result = mysqli_query($conn, "SELECT COUNT(*) as total FROM items WHERE owner_id = $user_id");
+$total_item = mysqli_fetch_assoc($item_result)['total'] ?? 0;
 
-// Total Salary: jumlah total semua transaksi pembayaran
-$salaryQuery = mysqli_query($conn, "SELECT SUM(total_bayar) AS total_salary FROM pembayaran");
-$salaryData = mysqli_fetch_assoc($salaryQuery);
-$total_salary = $salaryData['total_salary'] ?? 0;
+// Total pesanan verified untuk item milik owner
+$rented_result = mysqli_query($conn, "
+    SELECT COUNT(*) AS total FROM riwayat_pesanan rp
+    JOIN items i ON rp.item_id = i.id
+    WHERE i.owner_id = $user_id AND rp.status = 'verified'
+");
+$total_rented = mysqli_fetch_assoc($rented_result)['total'] ?? 0;
 
-// Total Rented: jumlah total pesanan (riwayat_pesanan)
-$rentedQuery = mysqli_query($conn, "SELECT COUNT(*) AS total_rented FROM riwayat_pesanan");
-$rentedData = mysqli_fetch_assoc($rentedQuery);
-$total_rented = $rentedData['total_rented'] ?? 0;
-
-// Total Item: jumlah item yang tersedia
-$itemQuery = mysqli_query($conn, "SELECT COUNT(*) AS total_item FROM items");
-$itemData = mysqli_fetch_assoc($itemQuery);
-$total_item = $itemData['total_item'] ?? 0;
-
+// Total pemasukan dari pembayaran untuk pesanan item milik owner
+$salary_result = mysqli_query($conn, "
+    SELECT SUM(p.total_bayar) AS total_salary
+    FROM pembayaran p
+    JOIN riwayat_pesanan rp ON rp.id = p.pesanan_id
+    JOIN items i ON rp.item_id = i.id
+    WHERE i.owner_id = $user_id
+");
+$total_salary = mysqli_fetch_assoc($salary_result)['total_salary'] ?? 0;
 ?>
+
 
 
 
@@ -84,45 +89,29 @@ $total_item = $itemData['total_item'] ?? 0;
 
 
    <!-- Navbar Start -->
-        <nav class="navbar navbar-expand-lg">
-    <div class="container">
-         <!-- Logo -->
-         <a href="#"><img src="../img/logo.jpg" alt="Logo" class="logo-img"></a>
-        </div>
-         <!-- Logo End -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-            <ul class="navbar-nav">
-                 <li class="nav-item">
-                    <a class="nav-link <?php if($page == 'home') echo 'active'; ?>" href="dashboard.php">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?php if($page == 'item') echo 'active'; ?>" href="item.php">Item</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?php if($page == 'rent') echo 'active'; ?>" href="rent.php">Rent</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?php if($page == 'review') echo 'active'; ?>" href="review.php">Review</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?php if($page == 'transaction') echo 'active'; ?>" href="transaction.php">Transaction</a>
-                </li>
-            </ul>
-        </div>
-        <!-- Profil -->
-        <div class="profile">
+       <nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a href="#"><img src="../img/logo.jpg" alt="Logo" class="logo-img"></a>
+  </div>
+  <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item"><a class="nav-link" href="dashboard.php">Home</a></li>
+      <li class="nav-item"><a class="nav-link" href="item.php">Item</a></li>
+      <li class="nav-item"><a class="nav-link" href="rent.php">Rent</a></li>
+      <li class="nav-item"><a class="nav-link" href="review.php">Review</a></li>
+      <li class="nav-item"><a class="nav-link" href="transaction.php">Transaction</a></li>
+    </ul>
+  </div>
+  <div class="profile">
     <a href="../profile.php" class="btn search-button btn-md d-none d-md-block ml-4 text-white fw-normal">
-        <i class="fa fa-user-circle"></i> Profile
+      <i class="fa fa-user-circle"></i> Profile
     </a>
-</div>
-    </nav>
+  </div>
+</nav>
     <!-- Navbar End -->
 
 <div class="container mt-5 mb-4">
-  <p style="font-weight:700; color:#0f1a3c; margin-bottom: 0; font-size: 25px;">Welcome, Admin !</p>
+  <p style="font-weight:700; color:#0f1a3c; margin-bottom: 0; font-size: 25px;">Welcome, Owner !</p>
   <h2 style="font-weight:800; color:#0f1a3c; margin-top: 0; letter-spacing: 1px;">DASHBOARD</h2>
   <p class="text-muted">Here is your overview summary</p>
 </div>
@@ -173,9 +162,7 @@ $total_item = $itemData['total_item'] ?? 0;
 
  <!-- Footer -->
     <footer class="footer text-center py-4">
-      <div class="container-fluid">
         <p>&copy; 2025 Rentify - Team 5. All rights reserved.</p>
-      </div>
     </footer>
 
 <!-- JS updated path -->

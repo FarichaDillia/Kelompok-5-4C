@@ -129,7 +129,7 @@ $items = mysqli_query($conn, $query);
         <div class="row">
           <?php while ($item = mysqli_fetch_assoc($items)): ?>
           <div class="col-md-3 mb-4">
-            <div class="card">
+            <div class="card h-100 d-flex flex-column">
               <img src="img/<?= $item['gambar'] ?>" class="card-img-top" alt="<?= htmlspecialchars($item['nama']) ?>">
               <div class="card-body">
                 <h5 class="card-title"><?= htmlspecialchars($item['nama']) ?></h5>

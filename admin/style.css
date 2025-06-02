@@ -94,12 +94,6 @@ body {
   border-radius: 6px;
 }
 
-
-/* Rent Page Specific Styles */
-body {
-    background: linear-gradient(to bottom, #b9dff1, #e7f4fa);
-}
-
 .container-fluid {
     margin-top: 20px;
 }

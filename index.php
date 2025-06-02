@@ -16,10 +16,10 @@ $total_user = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS total F
 $total_item = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS total FROM items"))['total'];
 
 // Hitung pesanan terverifikasi
-$total_pesanan = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS total FROM pesanan WHERE status='verified'"))['total'];
+$total_pesanan = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS total FROM riwayat_pesanan WHERE status='verified'"))['total'];
 
 // Years growth (bisa statis atau ambil dari setting database)
-$years_growth = 5;
+$total_review = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS total FROM review"))['total'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -100,8 +100,8 @@ $years_growth = 5;
         <p>Completed Orders</p>
       </div>
       <div class="col-md-3">
-        <h2><span class="counter" data-target="<?= $years_growth ?>"><?= $years_growth ?></span>+</h2>
-        <p>Years Growth</p>
+        <h2><span class="counter" data-target="<?= $total_review ?>"><?= $total_review ?></span>+</h2>
+        <p>Reviewers</p>
       </div>
     </div>
   </div>
@@ -145,7 +145,7 @@ $years_growth = 5;
     <div class="row">
       <?php while ($item = mysqli_fetch_assoc($items)): ?>
       <div class="col-md-3 mb-4">
-        <div class="card">
+        <div class="card h-100 d-flex flex-column">
           <img src="img/<?= $item['gambar'] ?>" class="card-img-top" alt="<?= $item['nama'] ?>">
           <div class="card-body">
             <h5 class="card-title"><?= $item['nama'] ?></h5>

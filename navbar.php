@@ -9,10 +9,11 @@ $total_users = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS total 
 $total_items = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS total FROM items"))['total'];
 
 // Hitung pesanan terverifikasi
-$total_pesanan = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS total FROM pesanan WHERE status='verified'"))['total'];
+$total_pesanan = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS total FROM riwayat_pesanan WHERE status='verified'"))['total'];
+
 
 // Years growth (bisa statis atau ambil dari setting database)
-$years_growth = 5;
+$total_review = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS total FROM review"))['total'];
 
 // Tangkap input dari form
 $search = isset($_GET['search']) ? mysqli_real_escape_string($conn, $_GET['search']) : '';
@@ -162,8 +163,8 @@ $items = mysqli_query($conn, $query);
         <p>Completed Orders</p>
       </div>
       <div class="col-md-3">
-        <h2><span class="counter" data-target="<?= $years_growth ?>"><?= $years_growth ?></span>+</h2>
-        <p>Years Growth</p>
+        <h2><span class="counter" data-target="<?= $total_review ?>"><?= $total_review ?></span>+</h2>
+        <p>Reviewers</p>
       </div>
     </div>
   </div>
@@ -201,7 +202,7 @@ $items = mysqli_query($conn, $query);
 <!-- Categories End-->
 
 <!-- Search Section -->
-<form action="index.php" method="GET" class="search-form">
+<form action="navbar.php" method="GET" class="search-form">
   <div class="search-wrapper">
     <input type="text" name="search" class="search-input" placeholder="Search Item">
     <button type="submit" class="search-btn">Search</button>
@@ -217,7 +218,7 @@ $items = mysqli_query($conn, $query);
         <div class="row">
           <?php while ($item = mysqli_fetch_assoc($items)): ?>
           <div class="col-md-3 mb-4">
-            <div class="card">
+            <div class="card h-100 d-flex flex-column">
               <img src="img/<?= $item['gambar'] ?>" class="card-img-top" alt="<?= htmlspecialchars($item['nama']) ?>">
               <div class="card-body">
                 <h5 class="card-title"><?= htmlspecialchars($item['nama']) ?></h5>

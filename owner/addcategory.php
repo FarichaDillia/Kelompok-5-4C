@@ -2,58 +2,24 @@
 session_start();
 include "../config.php";
 
-$id = 0;
+$insert_error = false;
 
-// Ambil ID dari GET atau POST
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id = intval($_POST['id_kategori']);
-} elseif (isset($_GET['id'])) {
-    $id = intval($_GET['id']);
-} else {
-    header("Location: dashboard.php");
-    exit();
-}
-
-// Ambil data kategori dari database jika belum submit
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    $query = "SELECT * FROM kategori WHERE id_kategori = $id";
-    $result = mysqli_query($conn, $query);
-
-    if (!$result || mysqli_num_rows($result) === 0) {
-        header("Location: dashboard.php");
-        exit();
-    }
-
-    $kategori = mysqli_fetch_assoc($result);
-}
-
-// Jika tombol submit ditekan
 if (isset($_POST['submit'])) {
     $nama_kategori = mysqli_real_escape_string($conn, $_POST['nama_kategori']);
     $daily_rate = mysqli_real_escape_string($conn, $_POST['daily_rate']);
 
-    $update_query = "UPDATE kategori SET nama_kategori = '$nama_kategori', daily_rate = '$daily_rate' WHERE id_kategori = $id";
+    $query = "INSERT INTO kategori (nama_kategori, daily_rate) VALUES ('$nama_kategori', '$daily_rate')";
 
-    if (mysqli_query($conn, $update_query)) {
-       header("Location: edit.php?id=$id&update_success=1");
+    if (mysqli_query($conn, $query)) {
+        header("Location: addcategory.php?add_success=1");
         exit;
     } else {
-        echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
-        echo "<script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Gagal!',
-                text: 'Kategori gagal diperbarui.',
-                confirmButtonText: 'OK'
-            }).then(() => {
-                window.location.href = 'edit.php?id=$id';
-            });
-        </script>";
-        exit;
+        $insert_error = true; // set flag error
     }
 }
-?>
 
+
+?>
 
 <!DOCTYPE html>
 <html lang="id">
@@ -64,7 +30,8 @@ if (isset($_POST['submit'])) {
    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="../lib/vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
   <link href="../lib/css/sb-admin-2.min.css" rel="stylesheet">
-   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
   <link rel="stylesheet" href="style.css">
 </head>
 <style>
@@ -141,28 +108,26 @@ if (isset($_POST['submit'])) {
 </nav>
 
 <div class="container">
-    <div class="form-container">
-        <h2 class="text-center">Edit Kategori</h2>
-        <form method="POST">
-            <div class="mb-3">
-                <form method="POST">
-    <input type="hidden" name="id_kategori" value="<?= $id ?>">
-                <label class="form-label">Nama Kategori</label>
-                <input type="text" name="nama_kategori" class="form-control" value="<?= htmlspecialchars($kategori['nama_kategori']) ?>" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Daily Rate</label>
-                <input type="number" name="daily_rate" class="form-control" value="<?= htmlspecialchars($kategori['daily_rate']) ?>" required min="0">
-            </div>
-            <div class="d-flex justify-content-between">
-                <button type="submit" name="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Simpan
-                </button>
-                <a href="dashboard.php" class="btn btn-secondary">Kembali</a>
-            </div>
-        </form>
+        <div class="form-container">
+            <h2 class="text-center">Form Tambah Kategori</h2>
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Nama Kategori</label>
+                    <input type="text" name="nama_kategori" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Daily Rate</label>
+                    <input type="number" name="daily_rate" class="form-control" required min="0">
+                </div>
+                <div class="d-flex justify-content-between">
+                    <button type="submit" name="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Simpan
+                    </button>
+                    <a href="dashboard.php" class="btn btn-secondary">Kembali</a>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
     
 <footer class="footer text-center py-4">
   <p>&copy; 2025 Rentify - Team 5. All rights reserved.</p>
@@ -182,20 +147,33 @@ if (isset($_POST['submit'])) {
             });
         });
     </script>
-    <?php if (isset($_GET['update_success']) && $_GET['update_success'] == 1): ?>
+    <?php if (isset($_GET['add_success']) && $_GET['add_success'] == 1): ?>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
   document.addEventListener("DOMContentLoaded", function() {
     Swal.fire({
       icon: 'success',
       title: 'Berhasil!',
-      text: 'Kategori berhasil diperbarui.',
+      text: 'Kategori berhasil ditambahkan.',
       timer: 2000,
       showConfirmButton: false
     });
   });
 </script>
 <?php endif; ?>
+<?php if ($insert_error): ?>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    Swal.fire({
+      icon: 'error',
+      title: 'Gagal Menyimpan!',
+      text: 'Terjadi kesalahan saat menambahkan kategori.',
+      confirmButtonText: 'OK'
+    });
+  });
+</script>
+<?php endif; ?>
+
 
 </body>
 </html>

@@ -1,14 +1,17 @@
 <?php
 session_start();
-if (!isset($_SESSION["role"]) || $_SESSION["role"] != "admin") {
-    header("Location: ../login.php");
-    exit;
-}
 include "../config.php";
 
+$owner_id = $_SESSION["user_id"];
 $search = "";
+$whereClause = "";
+
 if (isset($_GET['search'])) {
     $search = trim($_GET['search']);
+    if ($search !== "") {
+        $searchEscaped = mysqli_real_escape_string($conn, $search);
+        $whereClause = " AND nama LIKE '%$searchEscaped%'";
+    }
 }
 
 $whereClause = "";
@@ -17,16 +20,15 @@ if ($search !== "") {
     $whereClause = " AND items.nama LIKE '%$searchEscaped%'";
 }
 
-$rented_items_query = "SELECT pesanan.id, items.nama AS item_name, pesanan.jumlah, pesanan.periode, items.harga 
-FROM pesanan 
-JOIN items ON pesanan.item_id = items.id 
-WHERE pesanan.status='verified' $whereClause
+$rented_items_query = "SELECT riwayat_pesanan.id, items.nama AS item_name, riwayat_pesanan.jumlah, riwayat_pesanan.start_date, riwayat_pesanan.end_date, kategori.daily_rate, 
+(DATEDIFF(riwayat_pesanan.end_date, riwayat_pesanan.start_date) + 1) AS periode, 
+(riwayat_pesanan.jumlah * kategori.daily_rate * (DATEDIFF(riwayat_pesanan.end_date, riwayat_pesanan.start_date) + 1)) AS total_harga
+FROM riwayat_pesanan 
+JOIN items ON riwayat_pesanan.item_id = items.id 
+JOIN kategori ON items.id_kategori = kategori.id_kategori
+WHERE riwayat_pesanan.status='verified' $whereClause
 ";
-$result_pesanan = mysqli_query($conn, $rented_items_query);
 
-if (!$result_pesanan) {
-    die("Error executing query: " . mysqli_error($conn));
-}
 ?>
 
 <!DOCTYPE html>
@@ -38,45 +40,31 @@ if (!$result_pesanan) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="../lib/vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
     <link href="../lib/css/sb-admin-2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="d-flex flex-column min-vh-100">
    <!-- Navbar Start -->
         <nav class="navbar navbar-expand-lg">
-    <div class="container">
-         <!-- Logo -->
-         <a href="#"><img src="../img/logo.jpg" alt="Logo" class="logo-img"></a>
-        </div>
-         <!-- Logo End -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-            <ul class="navbar-nav">
-                 <li class="nav-item">
-                    <a class="nav-link <?php if($page == 'home') echo 'active'; ?>" href="dashboard.php">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?php if($page == 'item') echo 'active'; ?>" href="item.php">Item</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?php if($page == 'rent') echo 'active'; ?>" href="rent.php">Rent</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?php if($page == 'review') echo 'active'; ?>" href="review.php">Review</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?php if($page == 'transaction') echo 'active'; ?>" href="transaction.php">Transaction</a>
-                </li>
-            </ul>
-        </div>
-        <!-- Profil -->
-        <div class="profile">
-    <a href="profile.php" class="btn search-button btn-md d-none d-md-block ml-4 text-white fw-normal">
-        <i class="fa fa-user-circle"></i> Profile
+  <div class="container">
+    <a href="#"><img src="../img/logo.jpg" alt="Logo" class="logo-img"></a>
+  </div>
+  <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item"><a class="nav-link" href="dashboard.php">Home</a></li>
+      <li class="nav-item"><a class="nav-link" href="item.php">Item</a></li>
+      <li class="nav-item"><a class="nav-link" href="rent.php">Rent</a></li>
+      <li class="nav-item"><a class="nav-link" href="review.php">Review</a></li>
+      <li class="nav-item"><a class="nav-link" href="transaction.php">Transaction</a></li>
+    </ul>
+  </div>
+  <div class="profile">
+    <a href="../profile.php" class="btn search-button btn-md d-none d-md-block ml-4 text-white fw-normal">
+      <i class="fa fa-user-circle"></i> Profile
     </a>
-</div>
-    </nav>
+  </div>
+</nav>
     <!-- Navbar End -->
 
 
@@ -123,7 +111,8 @@ if (!$result_pesanan) {
     <tbody class="text-center">
       <?php
       $no = 1;
-      $query_items = "SELECT * FROM items";
+     $query_items = "SELECT * FROM items WHERE owner_id = $owner_id AND status != 'Deleted' $whereClause";
+
       $result_items = mysqli_query($conn, $query_items);
       while ($item = mysqli_fetch_assoc($result_items)) {
         echo "<tr>
@@ -145,9 +134,10 @@ if (!$result_pesanan) {
                   <a href='edititem.php?id={$item['id']}' class='btn btn-sm btn-warning me-1'>
                     <i class='fas fa-edit'></i> Edit
                   </a>
-                  <a href='hapusitem.php?id={$item['id']}' onclick='return confirm(\"Yakin hapus?\")' class='btn btn-sm btn-danger'>
-                    <i class='fas fa-trash-alt'></i> Delete
-                  </a>
+                  <a href='#' class='btn btn-sm btn-danger btn-delete' data-id='{$item['id']}'>
+  <i class='fas fa-trash-alt'></i> Delete
+</a>
+
                 </td>
               </tr>";
         $no++;
@@ -162,9 +152,7 @@ if (!$result_pesanan) {
 
        <!-- Footer -->
     <footer class="footer text-center py-4">
-      <div class="container-fluid">
         <p>&copy; 2025 Rentify - Team 5. All rights reserved.</p>
-      </div>
     </footer>
 
 <!-- Scripts -->
@@ -205,7 +193,35 @@ if (!$result_pesanan) {
       });
     }
   });
+
+  document.addEventListener('DOMContentLoaded', function () {
+  const deleteButtons = document.querySelectorAll('.btn-delete');
+
+  deleteButtons.forEach(button => {
+    button.addEventListener('click', function (e) {
+      e.preventDefault();
+      const itemId = this.getAttribute('data-id');
+
+      Swal.fire({
+        title: 'Yakin ingin menghapus?',
+        text: "Data yang dihapus tidak dapat dikembalikan!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = `hapusitem.php?id=${itemId}`;
+        }
+      });
+    });
+  });
+});
+
 </script>
+
 
 </body>
 </html>

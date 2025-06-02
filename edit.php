@@ -8,6 +8,8 @@ if (!isset($_SESSION["user_id"])) {
 }
 
 $user_id = $_SESSION["user_id"];
+$toast_message = "";
+$toast_type = ""; // success atau error
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST["username"];
@@ -17,26 +19,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST["password"];
 
     if (empty($username) || empty($email)) {
-        echo "<script>alert('Username dan Email tidak boleh kosong!'); window.location='edit.php';</script>";
-        exit();
-    }
-
-    if (!empty($password)) {
-        $sql = "UPDATE users SET username=?, email=?, alamat=?, no_telp=?, password=? WHERE id=?";
-        $stmt = mysqli_prepare($conn, $sql);
-        mysqli_stmt_bind_param($stmt, "sssssi", $username, $email, $alamat, $no_telp, $password, $user_id);
+        $toast_message = "Username dan Email tidak boleh kosong!";
+        $toast_type = "error";
     } else {
-        $sql = "UPDATE users SET username=?, email=?, alamat=?, no_telp=? WHERE id=?";
-        $stmt = mysqli_prepare($conn, $sql);
-        mysqli_stmt_bind_param($stmt, "ssssi", $username, $email, $alamat, $no_telp, $user_id);
-    }
+        if (!empty($password)) {
+            $sql = "UPDATE users SET username=?, email=?, alamat=?, no_telp=?, password=? WHERE id=?";
+            $stmt = mysqli_prepare($conn, $sql);
+            mysqli_stmt_bind_param($stmt, "sssssi", $username, $email, $alamat, $no_telp, $password, $user_id);
+        } else {
+            $sql = "UPDATE users SET username=?, email=?, alamat=?, no_telp=? WHERE id=?";
+            $stmt = mysqli_prepare($conn, $sql);
+            mysqli_stmt_bind_param($stmt, "ssssi", $username, $email, $alamat, $no_telp, $user_id);
+        }
 
-    if (mysqli_stmt_execute($stmt)) {
-        echo "<script>alert('Profil berhasil diperbarui!'); window.location='profile.php';</script>";
-        exit();
-    } else {
-        echo "<script>alert('Gagal memperbarui profil!'); window.location='edit.php';</script>";
-        exit();
+        if (mysqli_stmt_execute($stmt)) {
+            $toast_message = "Profil berhasil diperbarui!";
+            $toast_type = "success";
+        } else {
+            $toast_message = "Gagal memperbarui profil!";
+            $toast_type = "error";
+        }
     }
 }
 
@@ -50,6 +52,7 @@ $user = mysqli_fetch_assoc($result);
   <meta charset="UTF-8">
   <title>Edit Profile - Rentify</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     body {
       background: linear-gradient(to right, #77acc7, #a1c4fd);
@@ -161,6 +164,22 @@ $user = mysqli_fetch_assoc($result);
       <button type="submit">Simpan Perubahan</button>
     </form>
   </div>
+
+  <?php if (!empty($toast_message)): ?>
+    <script>
+      Swal.fire({
+        icon: '<?= $toast_type ?>',
+        title: '<?= $toast_type === "success" ? "Berhasil" : "Oops..." ?>',
+        text: '<?= $toast_message ?>',
+        showConfirmButton: false,
+        timer: 2000
+      }).then(() => {
+        <?php if ($toast_type === "success"): ?>
+          window.location.href = 'profile.php';
+        <?php endif; ?>
+      });
+    </script>
+  <?php endif; ?>
 
 </body>
 </html>
